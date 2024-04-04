@@ -1,2 +1,2 @@
 # mdisd
-A library for multi-dimensional interpolation of scattered data.
+A C++ library for multi-dimensional interpolation of scattered data.
