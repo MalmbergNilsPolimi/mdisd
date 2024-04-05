@@ -2,6 +2,12 @@
 #include "RBFinterpolation.hpp"
 
 RBFInterpolation::RBFInterpolation(std::function<double(double, double)> rbfunction) : rbfunction(rbfunction) {
+}
+
+double RBFInterpolation::interpolate(const std::vector<double>& parametersFORinterp, 
+                                      const std::vector<std::vector<double>>& parameters,
+                                      const std::vector<double>& measurements) const {
+
 
 }
 
