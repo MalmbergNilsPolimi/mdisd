@@ -1,11 +1,11 @@
 #ifndef INTERPOLATIONMETHOD_HPP
 #define INTERPOLATIONMETHOD_HPP
 
-#include <vector>
+#include <Eigen/Core>
 
 class InterpolationMethod {
 public:
-    virtual double interpolate(const std::vector<double>& parametersFORinterp, const std::vector<std::vector<double>>& parameters, const std::vector<double>& measurements) const = 0;
+    virtual double interpolate(const Eigen::VectorXd& parametersFORinterp, const Eigen::MatrixXd& parameters, const Eigen::VectorXd& measurements) const = 0;
 };
 
 #endif // INTERPOLATIONMETHOD_HPP

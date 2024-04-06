@@ -1,16 +1,16 @@
 #ifndef DATA_HPP
 #define DATA_HPP
 
-#include <vector>
+#include <Eigen/Core>
 
 class Data {
 private:
-    std::vector<double> measurements;
-    std::vector<std::vector<double>> parameters;
+    Eigen::VectorXd measurements;
+    Eigen::MatrixXd parameters;
 public:
-    Data(const std::vector<double>& measurements, const std::vector<std::vector<double>>& parameters);
-    const std::vector<double>& getMeasurements() const;
-    const std::vector<std::vector<double>>& getParameters() const;
+    Data(const Eigen::VectorXd& measurements, const Eigen::MatrixXd& parameters);
+    const Eigen::VectorXd& getMeasurements() const;
+    const Eigen::MatrixXd& getParameters() const;
 };
 
 #endif // DATA_HPP

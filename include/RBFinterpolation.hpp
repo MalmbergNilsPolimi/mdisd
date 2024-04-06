@@ -12,9 +12,9 @@ private:
 public:
     RBFInterpolation(std::function<double(double, double)> rbfunction);
     
-    double interpolate(const std::vector<double>& parametersFORinterp, 
-                       const std::vector<std::vector<double>>& parameters,
-                       const std::vector<double>& measurements)
+    double interpolate(const Eigen::VectorXd& parametersFORinterp, 
+                       const Eigen::MatrixXd& parameters,
+                       const Eigen::VectorXd& measurements)
                        const override;
 
     static double rbMultiquadratic(double r, double r0);
@@ -25,3 +25,4 @@ public:
 };
 
 #endif // RBFINTERPOLATION_HPP
+

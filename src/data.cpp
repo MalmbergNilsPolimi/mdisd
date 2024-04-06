@@ -1,13 +1,13 @@
 #include "data.hpp"
 
-Data::Data(const std::vector<double>& measurements, const std::vector<std::vector<double>>& parameters)
+Data::Data(const Eigen::VectorXd& measurements, const Eigen::MatrixXd& parameters)
     : measurements(measurements), parameters(parameters) {
 }
 
-const std::vector<double>& Data::getMeasurements() const {
+const Eigen::VectorXd& Data::getMeasurements() const {
     return measurements;
 }
 
-const std::vector<std::vector<double>>& Data::getParameters() const {
+const Eigen::MatrixXd& Data::getParameters() const {
     return parameters;
 }

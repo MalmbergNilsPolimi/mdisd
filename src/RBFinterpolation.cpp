@@ -1,12 +1,15 @@
-#include <cmath>
 #include "RBFinterpolation.hpp"
+#include <cmath>
 
 RBFInterpolation::RBFInterpolation(std::function<double(double, double)> rbfunction) : rbfunction(rbfunction) {
 }
 
-double RBFInterpolation::interpolate(const std::vector<double>& parametersFORinterp, 
-                                      const std::vector<std::vector<double>>& parameters,
-                                      const std::vector<double>& measurements) const {
+double RBFInterpolation::interpolate(const Eigen::VectorXd& parametersFORinterp, 
+                                     const Eigen::MatrixXd& parameters,
+                                     const Eigen::VectorXd& measurements) const {
+
+
+
 
 
 }
