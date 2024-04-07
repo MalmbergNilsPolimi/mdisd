@@ -1,1 +1,0 @@
-// Nothing because InterpolationMethod is an abstract class
