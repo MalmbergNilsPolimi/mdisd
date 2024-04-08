@@ -4,13 +4,13 @@
 #include "interpolator.hpp"
 
 /**
- * @brief Interpolator using Radial Basis Function (RBF) interpolation method.
+ * @brief Interpolator using Ordinary Least Squares (OLS) approximation method.
  */
 class OLSInterpolator : public Interpolator {
 
 public:
     /**
-     * @brief Interpolates a value based on given parameters and measurements using RBF method.
+     * @brief Interpolates a value based on given parameters and measurements using OLS method.
      * 
      * @param parametersFORinterp The points we want to interpolate.
      * @param parameters The matrix of parameters.
