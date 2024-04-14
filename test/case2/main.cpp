@@ -1,119 +1,187 @@
 #include <iostream>
 #include <cmath>
-#include <random>
+#include <fstream>
+#include <filesystem>
 
 #include "RBFunctions.hpp"
 #include "RBFinterpolator.hpp"
 #include "OLSinterpolator.hpp"
 
-template<typename T>
-T generateRandomNumber(T min, T max) {
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_real_distribution<T> dis(min, max);
-    return dis(gen);
+
+void plotData(const Eigen::MatrixXd& x, const Eigen::VectorXd& y_interpolatedRBF, const Eigen::VectorXd& y_interpolatedOLS, const Eigen::MatrixXd& x_data, const Eigen::VectorXd& y_data, const bool EXPORT) {
+    std::filesystem::create_directories("./plot/");
+    std::filesystem::create_directories("./plot/files/");
+    std::filesystem::create_directories("./plot/figures/");
+
+    // RBF
+    std::ofstream dataFileRBF("./plot/files/interpolated_points_RBF.dat");
+    if (!dataFileRBF.is_open()) {
+        std::cerr << "Error: Unable to open data file." << std::endl;
+        return;
+    }
+
+    for (int i = 0; i < x.rows(); ++i) {
+        dataFileRBF << x(i, 0) << " " << y_interpolatedRBF(i) << std::endl;
+    }
+    dataFileRBF.close();
+
+    // OLS
+    std::ofstream dataFileOLS("./plot/files/interpolated_points_OLS.dat");
+    if (!dataFileOLS.is_open()) {
+        std::cerr << "Error: Unable to open data file." << std::endl;
+        return;
+    }
+
+    for (int i = 0; i < x.rows(); ++i) {
+        dataFileOLS << x(i, 0) << " " << y_interpolatedOLS(i) << std::endl;
+    }
+    dataFileOLS.close();
+
+    // DATA FROM [du Toit]
+    std::ofstream dataFileData("./plot/files/data.dat");
+    if (!dataFileData.is_open()) {
+        std::cerr << "Error: Unable to open data file for data." << std::endl;
+        return;
+    }
+
+    for (int i = 0; i < x_data.rows(); ++i) {
+        dataFileData << x_data(i, 0) << " " << y_data(i) << std::endl;
+    }
+    dataFileData.close();
+
+    std::string title{"1D interpolation : test case of a linear function y = a*x + b"};
+
+    // GNUplot commands
+    std::ofstream gnuplotScript("./plot/files/plot_script.gnu");
+    
+    if (EXPORT)
+    {
+        // To export the plot in svg format
+        gnuplotScript << "set terminal svg" << std::endl;
+        gnuplotScript << "set output \"" << "./plot/figures/case2_plot.svg" << "\"" << std::endl;
+    }
+
+    gnuplotScript << "set title \"" << title << "\"" << std::endl;
+    gnuplotScript << "set xlabel \"x\"" << std::endl;
+    gnuplotScript << "set ylabel \"interpolated f(x)\"" << std::endl;
+    gnuplotScript << "plot \"" << "./plot/files/interpolated_points_RBF.dat" << "\" with lines title \"RBF interpolation\","
+                << " \"" << "./plot/files/interpolated_points_OLS.dat" << "\" with lines title \"OLS interpolation\","
+                << " \"" << "./plot/files/data.dat" << "\" with points pointtype 7 title \"Regressors\"" 
+                << std::endl; // Plot command ends here, before the legend key
+    gnuplotScript << "set key bottom right" << std::endl; // Setting the position of the legend
+        
+    
+    if (EXPORT)
+    {   
+        // The export "cancel" the plot
+        // Replot to see it in a window
+        gnuplotScript << "set terminal wxt" << std::endl;
+        gnuplotScript << "replot" << std::endl;
+    }
+
+    gnuplotScript.close();
+
+    // Execute GNUplot
+    system("gnuplot -persist ./plot/files/plot_script.gnu");
 }
+
 
 int main() {
 
-    ////////////////////////////////////////////////
-    //////// TEST : Using random sampling //////////
-    ////////////////////////////////////////////////
+    //////////////////////////////////////////////////
+    ////// TEST : 1D OLS with a linear function //////
+    //////////////////////////////////////////////////
 
-    // Function that return many sets of parameters.
-    auto fillParameters = [](int num_sets, int num_params, double inf, double sup) {
-        Eigen::MatrixXd parameters(num_sets, num_params);
-        for (size_t i = 0; i < num_sets; ++i) {
-            for (size_t j = 0; j < num_params; ++j) {
-                
-                double a{generateRandomNumber(inf , sup)};
-                double b{generateRandomNumber(inf , sup)};
-
-                if (a > b)
-                {
-                    double tmp = a;
-                    a = b;
-                    b = tmp;
-                }
-                
-                parameters(i, j) = generateRandomNumber(a, b);
-            }
-        }
-        return parameters;
-    };
-
-    // Definition of the function to interpolate (THE USER CAN CHANGE HERE THE FUNCTION)
-    auto funToInterpolate = [](const Eigen::VectorXd& params) {
-        double res = 0;
-        for (int i = 0; i < params.size(); ++i) {
-            res += std::pow(params(i), i);
-        }
-        return res;
-    };
-
-
-    // Dimensions of the problem
-    size_t num_params{4};       // number of parameters taken by the function
-    size_t num_measures{100};   // number of known points
-    size_t num_points{3};       // number of points to interpolate
+    size_t num_params{1};      // 1D scattered data : y = f(x)
+    size_t num_measures{5};    // 3 known points
+    size_t num_points{10};     // number of points to interpolate
     
-    // [inf, sup] is the interval of definition of the parameter
-    double inf{0.};
-    double sup{20.};
+    auto funToInterpolate = [](double& a, double& b, double& x) {
+        return a*x + b;
+    };
 
-    // Declaration of the known parameters, known measurements and set of parameters used for the interpolation
+    // y = 0.5 * x - 4.3
+    double a{0.5};
+    double b{-4.3};
+
+    // Create the matrix with the known parameters
     Eigen::MatrixXd parameters(num_measures, num_params);
+    parameters <<  -2,
+                  3.7,
+                  0.1,
+                   -6,
+                 18.2;
+    
+    // Create the vector with the known results corresponding to parameters
     Eigen::VectorXd measurements(num_measures);
+    
+    for (size_t i = 0; i < num_measures; ++i)
+    {
+        measurements(i) = funToInterpolate(a, b, parameters(i));
+    }    
+
+    // Create the values of the parameters for which we want the interpolation
     Eigen::MatrixXd parametersFORinterp(num_points, num_params);
 
-    // Creation of a random matrix containing the parameters for each measurement    
-    parameters = fillParameters(num_measures, num_params, inf, sup);
+    double inf{-10};
+    double sup{20};
 
-    // Creation of the measurements 
-    for (size_t i = 0; i < num_measures; i++)
-    {
-        measurements(i) = funToInterpolate(parameters.row(i));
+    int j{};
+    for (size_t i = 0; i < num_points; ++i)
+    {   
+        parametersFORinterp(i,j) = inf + i * (sup - inf) / (num_points-1);
     }
 
-    // Creation of the parameters for which the user want the estimated output
-    parametersFORinterp = fillParameters(num_points, num_params, inf, sup);
-
+    // Define the vectors to store the coefficients of the interpolations
+    Eigen::VectorXd regressionRBF;
+    Eigen::VectorXd regressionOLS;
 
     // Use of RBF interpolation method
-    double scale_factor{0.5};   // (THE USER CAN CHANGER HERE THE VALUE OF THE SCALE FACTOR)
-    RBFInterpolator interpolatorRBF(&RBFunctions::multiquadratic, scale_factor); // (THE USER CAN CHANGE HERE THE USED RBFUNCTION)
-    Eigen::VectorXd RBF_points_interpolated = interpolatorRBF.interpolate(parametersFORinterp, parameters, measurements);
+    double scale_factor{0};
+    RBFInterpolator interpolatorRBF(&RBFunctions::multiquadratic, scale_factor);
+    Eigen::VectorXd RBF_points_interpolated = interpolatorRBF.interpolate(parametersFORinterp, parameters, measurements, &regressionRBF);
 
     // Use of OLS approximation method
     OLSInterpolator interpolatorOLS;
-    Eigen::VectorXd OLS_points_interpolated = interpolatorOLS.interpolate(parametersFORinterp, parameters, measurements);
-    Eigen::VectorXd points_real(num_points);
-
-    // Computing of the real values
-    for (size_t i = 0; i < num_points; ++i)
-    {
-        points_real(i) = funToInterpolate(parametersFORinterp.row(i));
-    }
+    Eigen::VectorXd OLS_points_interpolated = interpolatorOLS.interpolate(parametersFORinterp, parameters, measurements, &regressionOLS);
 
 
     //////////////////////////////////////////////////
     ////////// PRINT OF RBF AND OLS RESULTS //////////
     //////////////////////////////////////////////////
 
-    std::cout << "____________________USING THE REAL FUNCTION___________________" << std::endl;
-    std::cout << "Real value:                 " << points_real.transpose() << std::endl;
-    
-    std::cout << std::endl;
-    
-    std::cout << "__________________USING RADIAL BASIS FUNCTIONS__________________" << std::endl;
-    std::cout << "Interpolated value:         " << RBF_points_interpolated.transpose() << std::endl;
-    std::cout << "Algebraic relative error:   " << ((RBF_points_interpolated - points_real).array() / points_real.array().abs()).transpose() << std::endl;
+    bool PRINT{true};
 
-    std::cout << std::endl;
+    if (PRINT)
+    {
+        std::cout << "__________________USING RADIAL BASIS FUNCTIONS__________________" << std::endl;
 
-    std::cout << "__________________USING ORDINARY LEAST SQUARES__________________" << std::endl;
-    std::cout << "Interpolated value:         " << OLS_points_interpolated.transpose() << std::endl;
-    std::cout << "Algebraic relative error:   " << ((OLS_points_interpolated - points_real).array() / points_real.array().abs()).transpose() << std::endl;
+        if (regressionRBF.size() != 0)
+        {
+            std::cout << "Coefficients: " << regressionRBF.transpose() << std::endl;
+        }
+        
+        //std::cout << "Interpolated value: " << RBF_points_interpolated.transpose() << std::endl;
+
+        std::cout << std::endl;
+
+        std::cout << "__________________USING ORDINARY LEAST SQUARES__________________" << std::endl;
+
+        if (regressionOLS.size() != 0)
+        {
+            std::cout << "Coefficients: " << regressionOLS.transpose() << std::endl;
+        }
+
+        //std::cout << "Interpolated value: " << OLS_points_interpolated.transpose() << std::endl;
+    }
+
+
+    //////////////////////////////////////////////////
+    /////////// PLOT OF RBF AND OLS RESULTS //////////
+    //////////////////////////////////////////////////
+
+    bool EXPORT{true};
+    plotData(parametersFORinterp, RBF_points_interpolated, OLS_points_interpolated, parameters, measurements, EXPORT);
 
     return 0;
 }
