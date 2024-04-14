@@ -123,11 +123,25 @@ int main() {
 
     if (PRINT)
     {
-        std::cout << "__________________USING RADIAL BASIS FUNCTIONS__________________" << std::endl;
+        std::cout << "_USING RADIAL BASIS FUNCTIONS_" << std::endl;
 
         if (regressionRBF.size() != 0)
         {
-            std::cout << "Coefficients: " << regressionRBF.transpose() << std::endl;
+
+            std::cout << "______________________________" << std::endl;
+
+            std::cout << "||" << std::setw(5) << ""
+                      << std::setw(21) << std::left << "|| Weights"
+                      << "||" << std::endl;
+
+            std::cout << "______________________________" << std::endl;
+            for (int i = 0; i < regressionRBF.size(); ++i) {
+                std::cout << "|| " << std::setw(4) << std::left << i
+                          << "|| " << std::setw(18) << std::left << regressionRBF(i)
+                          << "|| " << std::endl;
+            }
+            std::cout << "______________________________" << std::endl;
+
         }
         
         //std::cout << "Interpolated value: " << RBF_points_interpolated.transpose() << std::endl;
