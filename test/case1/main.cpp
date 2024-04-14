@@ -8,7 +8,7 @@
 #include "OLSinterpolator.hpp"
 
 
-void plotData(const Eigen::MatrixXd& x, const Eigen::VectorXd& y_interpolatedRBF, const Eigen::VectorXd& y_interpolatedOLS, const Eigen::MatrixXd& x_data, const Eigen::VectorXd& y_data, const bool EXPORT) {
+void plotData(const Eigen::MatrixXd& x, const Eigen::VectorXd& y_interpolatedRBF, const Eigen::MatrixXd& x_data, const Eigen::VectorXd& y_data, const bool EXPORT) {
     std::filesystem::create_directories("./plot/");
     std::filesystem::create_directories("./plot/files/");
     std::filesystem::create_directories("./plot/figures/");
@@ -24,18 +24,6 @@ void plotData(const Eigen::MatrixXd& x, const Eigen::VectorXd& y_interpolatedRBF
         dataFileRBF << x(i, 0) << " " << y_interpolatedRBF(i) << std::endl;
     }
     dataFileRBF.close();
-
-    // OLS
-    std::ofstream dataFileOLS("./plot/files/interpolated_points_OLS.dat");
-    if (!dataFileOLS.is_open()) {
-        std::cerr << "Error: Unable to open data file." << std::endl;
-        return;
-    }
-
-    for (int i = 0; i < x.rows(); ++i) {
-        dataFileOLS << x(i, 0) << " " << y_interpolatedOLS(i) << std::endl;
-    }
-    dataFileOLS.close();
 
     // DATA FROM [du Toit]
     std::ofstream dataFileData("./plot/files/data.dat");
@@ -65,7 +53,6 @@ void plotData(const Eigen::MatrixXd& x, const Eigen::VectorXd& y_interpolatedRBF
     gnuplotScript << "set xlabel \"x\"" << std::endl;
     gnuplotScript << "set ylabel \"interpolated f(x)\"" << std::endl;
     gnuplotScript << "plot \"" << "./plot/files/interpolated_points_RBF.dat" << "\" with lines title \"RBF interpolation\","
-                  << " \"./plot/files/interpolated_points_OLS.dat" << "\" with lines title \"OLS interpolation\","
                   << " \"./plot/files/data.dat\" with points pointtype 7 title \"Regressors\"" << std::endl;
     
     if (EXPORT)
@@ -120,16 +107,11 @@ int main() {
 
     // Define the vectors to store the coefficients of the interpolations
     Eigen::VectorXd regressionRBF;
-    Eigen::VectorXd regressionOLS;
 
     // Use of RBF interpolation method
     double scale_factor{sqrt(0.5)};
     RBFInterpolator interpolatorRBF(&RBFunctions::gaussian, scale_factor);
     Eigen::VectorXd RBF_points_interpolated = interpolatorRBF.interpolate(parametersFORinterp, parameters, measurements, &regressionRBF);
-
-    // Use of OLS approximation method
-    OLSInterpolator interpolatorOLS;
-    Eigen::VectorXd OLS_points_interpolated = interpolatorOLS.interpolate(parametersFORinterp, parameters, measurements, &regressionOLS);
 
 
     //////////////////////////////////////////////////
@@ -148,17 +130,6 @@ int main() {
         }
         
         //std::cout << "Interpolated value: " << RBF_points_interpolated.transpose() << std::endl;
-
-        std::cout << std::endl;
-
-        std::cout << "__________________USING ORDINARY LEAST SQUARES__________________" << std::endl;
-
-        if (regressionOLS.size() != 0)
-        {
-            std::cout << "Coefficients: " << regressionOLS.transpose() << std::endl;
-        }
-
-        //std::cout << "Interpolated value: " << OLS_points_interpolated.transpose() << std::endl;
     }
 
 
@@ -167,7 +138,7 @@ int main() {
     //////////////////////////////////////////////////
 
     bool EXPORT{true};
-    plotData(parametersFORinterp, RBF_points_interpolated, OLS_points_interpolated, parameters, measurements, EXPORT);
+    plotData(parametersFORinterp, RBF_points_interpolated, parameters, measurements, EXPORT);
 
     return 0;
 }
