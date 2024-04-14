@@ -5,10 +5,11 @@
 
 #include "RBFunctions.hpp"
 #include "RBFinterpolator.hpp"
-#include "OLSinterpolator.hpp"
 
 
-void plotData(const Eigen::MatrixXd& x, const Eigen::VectorXd& y_interpolatedRBF, const Eigen::MatrixXd& x_data, const Eigen::VectorXd& y_data, const bool EXPORT) {
+void plotData(const Eigen::MatrixXd& x, const Eigen::VectorXd& y_interpolatedRBF,
+              const Eigen::MatrixXd& x_data, const Eigen::VectorXd& y_data, const bool EXPORT) {
+
     std::filesystem::create_directories("./plot/");
     std::filesystem::create_directories("./plot/files/");
     std::filesystem::create_directories("./plot/figures/");
@@ -115,7 +116,7 @@ int main() {
 
 
     //////////////////////////////////////////////////
-    ////////// PRINT OF RBF AND OLS RESULTS //////////
+    ////////////// PRINT OF RBF RESULTS //////////////
     //////////////////////////////////////////////////
 
     bool PRINT{true};
@@ -134,7 +135,7 @@ int main() {
 
 
     //////////////////////////////////////////////////
-    /////////// PLOT OF RBF AND OLS RESULTS //////////
+    /////////////// PLOT OF RBF RESULTS //////////////
     //////////////////////////////////////////////////
 
     bool EXPORT{true};
