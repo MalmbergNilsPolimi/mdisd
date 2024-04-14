@@ -2,7 +2,8 @@
 
 Eigen::VectorXd OLSInterpolator::interpolate(const Eigen::MatrixXd& parametersFORinterp,
                                              const Eigen::MatrixXd& parameters,
-                                             const Eigen::VectorXd& measurements) const {
+                                             const Eigen::VectorXd& measurements,
+                                             Eigen::VectorXd* regression) const {
 
     size_t num_params{static_cast<size_t>(parameters.cols())};
     size_t num_measures{static_cast<size_t>(measurements.size())};
@@ -18,6 +19,11 @@ Eigen::VectorXd OLSInterpolator::interpolate(const Eigen::MatrixXd& parametersFO
 
     beta_coeff = inverse_matrix * transpose_parameters * measurements;
 
+    // Storage of the weights if the user define the pointer to the VectorXd
+    if (regression) {
+        *regression = beta_coeff;
+    }
+
     // Computation of the interpolated value
     for (size_t i = 0; i < num_points; ++i)
     {
@@ -26,4 +32,10 @@ Eigen::VectorXd OLSInterpolator::interpolate(const Eigen::MatrixXd& parametersFO
         }
     }
     return results;
+}
+
+Eigen::VectorXd OLSInterpolator::interpolate(const Eigen::MatrixXd& parametersFORinterp,
+                                              const Eigen::MatrixXd& parameters,
+                                              const Eigen::VectorXd& measurements) const {
+    return interpolate(parametersFORinterp, parameters, measurements, nullptr);
 }

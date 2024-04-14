@@ -20,4 +20,9 @@ public:
     Eigen::VectorXd interpolate(const Eigen::MatrixXd& parametersFORinterp,
                                 const Eigen::MatrixXd& parameters,
                                 const Eigen::VectorXd& measurements) const override;
+
+    Eigen::VectorXd interpolate(const Eigen::MatrixXd& parametersFORinterp,
+                            const Eigen::MatrixXd& parameters,
+                            const Eigen::VectorXd& measurements,
+                            Eigen::VectorXd* regression) const override;
 };

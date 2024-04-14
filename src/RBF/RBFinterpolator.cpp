@@ -3,7 +3,8 @@
 
 Eigen::VectorXd RBFInterpolator::interpolate(const Eigen::MatrixXd& parametersFORinterp,
                                              const Eigen::MatrixXd& parameters,
-                                             const Eigen::VectorXd& measurements) const {
+                                             const Eigen::VectorXd& measurements,
+                                             Eigen::VectorXd* regression) const {
 
     size_t num_measures{static_cast<size_t>(measurements.size())};
     size_t num_points{static_cast<size_t>(parametersFORinterp.rows())};
@@ -23,6 +24,11 @@ Eigen::VectorXd RBFInterpolator::interpolate(const Eigen::MatrixXd& parametersFO
     
     Eigen::JacobiSVD<Eigen::MatrixXd> svd(coeff, Eigen::ComputeThinU | Eigen::ComputeThinV);
     Eigen::VectorXd weights = svd.solve(measurements);
+
+    // Storage of the weights if the user define the pointer to the VectorXd
+    if (regression) {
+        *regression = weights;
+    }
     
     // Computation of the interpolated value
     for (size_t k = 0; k < num_points; ++k)
@@ -33,4 +39,10 @@ Eigen::VectorXd RBFInterpolator::interpolate(const Eigen::MatrixXd& parametersFO
     }
     
     return results;
+}
+
+Eigen::VectorXd RBFInterpolator::interpolate(const Eigen::MatrixXd& parametersFORinterp,
+                                              const Eigen::MatrixXd& parameters,
+                                              const Eigen::VectorXd& measurements) const {
+    return interpolate(parametersFORinterp, parameters, measurements, nullptr);
 }

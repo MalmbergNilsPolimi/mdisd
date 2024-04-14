@@ -16,7 +16,15 @@ public:
      * @param measurements The measurements corresponding to the parameters.
      * @return The interpolated value.
      */
+
     virtual Eigen::VectorXd interpolate(const Eigen::MatrixXd& parametersFORinterp,
                                         const Eigen::MatrixXd& parameters,
                                         const Eigen::VectorXd& measurements) const = 0;
+
+    // Override because virtual functions can't have by default argurments//
+    // as Eigen::VectorXd* regression = nullptr
+    virtual Eigen::VectorXd interpolate(const Eigen::MatrixXd& parametersFORinterp,
+                                        const Eigen::MatrixXd& parameters,
+                                        const Eigen::VectorXd& measurements,
+                                        Eigen::VectorXd* regression) const = 0;
 };
