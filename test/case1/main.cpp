@@ -5,12 +5,14 @@
 
 #include "RBFunctions.hpp"
 #include "RBFinterpolator.hpp"
+#include "OLSinterpolator.hpp"
 
 
 void plotData(const Eigen::MatrixXd& x, const Eigen::VectorXd& y_interpolatedRBF,
-              const Eigen::MatrixXd& x_data, const Eigen::VectorXd& y_data,
-              const Eigen::VectorXd& point1, const Eigen::VectorXd& point2,
-              const Eigen::VectorXd& point3, const bool EXPORT) {
+              const Eigen::VectorXd& y_interpolatedOLS, const Eigen::MatrixXd& x_data,
+              const Eigen::VectorXd& y_data, const Eigen::VectorXd& point1,
+              const Eigen::VectorXd& point2, const Eigen::VectorXd& point3,
+              const bool EXPORT) {
 
     std::filesystem::create_directories("./plot/");
     std::filesystem::create_directories("./plot/files/");
@@ -27,6 +29,18 @@ void plotData(const Eigen::MatrixXd& x, const Eigen::VectorXd& y_interpolatedRBF
         dataFileRBF << x(i, 0) << " " << y_interpolatedRBF(i) << std::endl;
     }
     dataFileRBF.close();
+
+    // OLS
+    std::ofstream dataFileOLS("./plot/files/interpolated_points_OLS.dat");
+    if (!dataFileOLS.is_open()) {
+        std::cerr << "Error: Unable to open data file for OLS." << std::endl;
+        return;
+    }
+
+    for (int i = 0; i < x.rows(); ++i) {
+        dataFileOLS << x(i, 0) << " " << y_interpolatedOLS(i) << std::endl;
+    }
+    dataFileOLS.close();
 
     // DATA FROM [du Toit]
     std::ofstream dataFileData("./plot/files/data.dat");
@@ -96,16 +110,18 @@ void plotData(const Eigen::MatrixXd& x, const Eigen::VectorXd& y_interpolatedRBF
     gnuplotScript << "set ylabel \"interpolated f(x)\"" << std::endl;
     gnuplotScript << "set key box" << std::endl;
     gnuplotScript << "set style line 1 lc rgb 'blue' lt 1 lw 2" << std::endl;
-    gnuplotScript << "set style line 2 lc rgb 'green' dt 2 lw 2" << std::endl;
-    gnuplotScript << "set style line 3 lc rgb 'red' dt 2 lw 2" << std::endl;
-    gnuplotScript << "set style line 4 lc rgb 'cyan' dt 2 lw 2" << std::endl;
+    gnuplotScript << "set style line 2 lc rgb 'orange' lt 1 lw 2" << std::endl;
+    gnuplotScript << "set style line 3 lc rgb 'green' dt 2 lw 2" << std::endl;
+    gnuplotScript << "set style line 4 lc rgb 'red' dt 2 lw 2" << std::endl;
+    gnuplotScript << "set style line 5 lc rgb 'cyan' dt 2 lw 2" << std::endl;
     
     gnuplotScript << "plot \""
                   << "./plot/files/interpolated_points_RBF.dat" << "\" with lines linestyle 1 title \"RBF interpolation\","
+                  << " \"./plot/files/interpolated_points_OLS.dat" << "\" with lines linestyle 2 title \"OLS interpolation\","
                   << " \"./plot/files/data.dat\" with points pointtype 7 title \"Regressors\","
-                  << " \"./plot/files/point1.dat\" with lines linestyle 2 title \"1st point contribution\","
-                  << " \"./plot/files/point2.dat\" with lines linestyle 3 title \"2nd point contribution\","
-                  << " \"./plot/files/point3.dat\" with lines linestyle 4 title \"3rd point contribution\""
+                  << " \"./plot/files/point1.dat\" with lines linestyle 3 title \"1st point contribution\","
+                  << " \"./plot/files/point2.dat\" with lines linestyle 4 title \"2nd point contribution\","
+                  << " \"./plot/files/point3.dat\" with lines linestyle 5 title \"3rd point contribution\""
                   << std::endl;
 
 
@@ -161,11 +177,17 @@ int main() {
 
     // Define the vectors to store the coefficients of the interpolations
     Eigen::VectorXd regressionRBF;
+    Eigen::VectorXd regressionOLS;
 
     // Use of RBF interpolation method
     double scale_factor{sqrt(0.5)};
     RBFInterpolator interpolatorRBF(&RBFunctions::gaussian, scale_factor);
     Eigen::VectorXd RBF_points_interpolated = interpolatorRBF.interpolate(parametersFORinterp, parameters, measurements, &regressionRBF);
+
+    // Use of OLS interpolation method
+    OLSInterpolator interpolatorOLS;
+    Eigen::VectorXd OLS_points_interpolated = interpolatorOLS.interpolate(parametersFORinterp, parameters, measurements, &regressionOLS);
+
 
     // Datapoint's contribution to the interpolant
 
@@ -190,10 +212,11 @@ int main() {
 
     if (PRINT)
     {
-        std::cout << "_USING RADIAL BASIS FUNCTIONS_" << std::endl;
+        
 
         if (regressionRBF.size() != 0)
         {
+            std::cout << "_USING RADIAL BASIS FUNCTIONS_" << std::endl;
             std::cout << "______________________________" << std::endl;
 
             std::cout << "||" << std::setw(5) << ""
@@ -210,7 +233,28 @@ int main() {
 
         }
         
-        //std::cout << "Interpolated value: " << RBF_points_interpolated.transpose() << std::endl;
+        //std::cout << "RBF interpolated value: " << RBF_points_interpolated.transpose() << std::endl;
+
+        if (regressionOLS.size() != 0)
+        {
+            std::cout << "_USING ORDINARY LEAST SQUARES_" << std::endl;
+            std::cout << "______________________________" << std::endl;
+
+            std::cout << "||" << std::setw(5) << ""
+                      << std::setw(21) << std::left << "|| Coefficients"
+                      << "||" << std::endl;
+
+            std::cout << "______________________________" << std::endl;
+            for (int i = 0; i < regressionOLS.size(); ++i) {
+                std::cout << "|| " << std::setw(4) << std::left << i
+                          << "|| " << std::setw(18) << std::left << regressionOLS(i)
+                          << "|| " << std::endl;
+            }
+            std::cout << "______________________________" << std::endl;
+
+        }
+
+        //std::cout << "OLS interpolated value: " << OLS_points_interpolated.transpose() << std::endl;
     }
 
 
@@ -219,7 +263,7 @@ int main() {
     //////////////////////////////////////////////////
 
     bool EXPORT{true};
-    plotData(parametersFORinterp, RBF_points_interpolated, parameters, measurements, point1, point2, point3, EXPORT);
+    plotData(parametersFORinterp, RBF_points_interpolated, OLS_points_interpolated, parameters, measurements, point1, point2, point3, EXPORT);
 
     return 0;
 }
