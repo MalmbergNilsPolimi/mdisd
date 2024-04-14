@@ -66,7 +66,7 @@ void plotData(const Eigen::MatrixXd& x, const Eigen::VectorXd& y_interpolatedRBF
     gnuplotScript << "set ylabel \"interpolated f(x)\"" << std::endl;
     gnuplotScript << "plot \"" << "./plot/files/interpolated_points_RBF.dat" << "\" with lines title \"RBF interpolation\","
                   << " \"./plot/files/interpolated_points_OLS.dat" << "\" with lines title \"OLS interpolation\","
-                  << " \"./plot/files/data.dat\" with points pointtype 7 title \"Data\"" << std::endl;
+                  << " \"./plot/files/data.dat\" with points pointtype 7 title \"Regressors\"" << std::endl;
     
     if (EXPORT)
     {   
@@ -118,31 +118,47 @@ int main() {
         parametersFORinterp(i,j) = inf + i * (sup - inf) / (num_points-1);
     }
 
+    // Define the vectors to store the coefficients of the interpolations
+    Eigen::VectorXd regressionRBF;
+    Eigen::VectorXd regressionOLS;
+
     // Use of RBF interpolation method
     double scale_factor{sqrt(0.5)};
     RBFInterpolator interpolatorRBF(&RBFunctions::gaussian, scale_factor);
-    Eigen::VectorXd RBF_points_interpolated = interpolatorRBF.interpolate(parametersFORinterp, parameters, measurements);
+    Eigen::VectorXd RBF_points_interpolated = interpolatorRBF.interpolate(parametersFORinterp, parameters, measurements, &regressionRBF);
 
     // Use of OLS approximation method
     OLSInterpolator interpolatorOLS;
-    Eigen::VectorXd OLS_points_interpolated = interpolatorOLS.interpolate(parametersFORinterp, parameters, measurements);
+    Eigen::VectorXd OLS_points_interpolated = interpolatorOLS.interpolate(parametersFORinterp, parameters, measurements, &regressionOLS);
 
 
     //////////////////////////////////////////////////
     ////////// PRINT OF RBF AND OLS RESULTS //////////
     //////////////////////////////////////////////////
 
-    bool PRINT{false};
+    bool PRINT{true};
 
     if (PRINT)
     {
         std::cout << "__________________USING RADIAL BASIS FUNCTIONS__________________" << std::endl;
-        std::cout << "Interpolated value:         " << RBF_points_interpolated.transpose() << std::endl;
+
+        if (regressionRBF.size() != 0)
+        {
+            std::cout << "Coefficients: " << regressionRBF.transpose() << std::endl;
+        }
+        
+        //std::cout << "Interpolated value: " << RBF_points_interpolated.transpose() << std::endl;
 
         std::cout << std::endl;
 
         std::cout << "__________________USING ORDINARY LEAST SQUARES__________________" << std::endl;
-        std::cout << "Interpolated value:         " << OLS_points_interpolated.transpose() << std::endl;
+
+        if (regressionOLS.size() != 0)
+        {
+            std::cout << "Coefficients: " << regressionOLS.transpose() << std::endl;
+        }
+
+        //std::cout << "Interpolated value: " << OLS_points_interpolated.transpose() << std::endl;
     }
 
 
