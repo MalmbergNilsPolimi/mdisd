@@ -64,11 +64,12 @@ void plotData(const Eigen::MatrixXd& x, const Eigen::VectorXd& y_interpolatedRBF
     gnuplotScript << "set title \"" << title << "\"" << std::endl;
     gnuplotScript << "set xlabel \"x\"" << std::endl;
     gnuplotScript << "set ylabel \"interpolated f(x)\"" << std::endl;
+    gnuplotScript << "set key box" << std::endl;
     gnuplotScript << "plot \"" << "./plot/files/interpolated_points_RBF.dat" << "\" with lines title \"RBF interpolation\","
                 << " \"" << "./plot/files/interpolated_points_OLS.dat" << "\" with lines title \"OLS interpolation\","
                 << " \"" << "./plot/files/data.dat" << "\" with points pointtype 7 title \"Regressors\"" 
-                << std::endl; // Plot command ends here, before the legend key
-    gnuplotScript << "set key bottom right" << std::endl; // Setting the position of the legend
+                << std::endl;
+    gnuplotScript << "set key bottom right" << std::endl;
         
     
     if (EXPORT)
