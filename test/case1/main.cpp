@@ -8,7 +8,9 @@
 
 
 void plotData(const Eigen::MatrixXd& x, const Eigen::VectorXd& y_interpolatedRBF,
-              const Eigen::MatrixXd& x_data, const Eigen::VectorXd& y_data, const bool EXPORT) {
+              const Eigen::MatrixXd& x_data, const Eigen::VectorXd& y_data,
+              const Eigen::VectorXd& point1, const Eigen::VectorXd& point2,
+              const Eigen::VectorXd& point3, const bool EXPORT) {
 
     std::filesystem::create_directories("./plot/");
     std::filesystem::create_directories("./plot/files/");
@@ -17,7 +19,7 @@ void plotData(const Eigen::MatrixXd& x, const Eigen::VectorXd& y_interpolatedRBF
     // RBF
     std::ofstream dataFileRBF("./plot/files/interpolated_points_RBF.dat");
     if (!dataFileRBF.is_open()) {
-        std::cerr << "Error: Unable to open data file." << std::endl;
+        std::cerr << "Error: Unable to open data file for RBF." << std::endl;
         return;
     }
 
@@ -38,7 +40,46 @@ void plotData(const Eigen::MatrixXd& x, const Eigen::VectorXd& y_interpolatedRBF
     }
     dataFileData.close();
 
+    // Point 1 contribution
+    std::ofstream point1Data("./plot/files/point1.dat");
+    if (!point1Data.is_open()) {
+        std::cerr << "Error: Unable to open data file for point1." << std::endl;
+        return;
+    }
+
+    for (int i = 0; i < x.rows(); ++i) {
+        point1Data << x(i, 0) << " " << point1(i) << std::endl;
+    }
+    point1Data.close();
+
+    // Point 2 contribution
+    std::ofstream point2Data("./plot/files/point2.dat");
+    if (!point2Data.is_open()) {
+        std::cerr << "Error: Unable to open data file for point2." << std::endl;
+        return;
+    }
+
+    for (int i = 0; i < x.rows(); ++i) {
+        point2Data << x(i, 0) << " " << point2(i) << std::endl;
+    }
+    point2Data.close();
+
+    // Point 3 contribution
+    std::ofstream point3Data("./plot/files/point3.dat");
+    if (!point3Data.is_open()) {
+        std::cerr << "Error: Unable to open data file for point3." << std::endl;
+        return;
+    }
+
+    for (int i = 0; i < x.rows(); ++i) {
+        point3Data << x(i, 0) << " " << point3(i) << std::endl;
+    }
+    point3Data.close();
+
+
+
     std::string title{"1D interpolation : test case from [du Toit]"};
+
 
     // GNUplot commands
     std::ofstream gnuplotScript("./plot/files/plot_script.gnu");
@@ -53,8 +94,21 @@ void plotData(const Eigen::MatrixXd& x, const Eigen::VectorXd& y_interpolatedRBF
     gnuplotScript << "set title \"" << title << "\"" << std::endl;
     gnuplotScript << "set xlabel \"x\"" << std::endl;
     gnuplotScript << "set ylabel \"interpolated f(x)\"" << std::endl;
-    gnuplotScript << "plot \"" << "./plot/files/interpolated_points_RBF.dat" << "\" with lines title \"RBF interpolation\","
-                  << " \"./plot/files/data.dat\" with points pointtype 7 title \"Regressors\"" << std::endl;
+    gnuplotScript << "set key box" << std::endl;
+    gnuplotScript << "set style line 1 lc rgb 'blue' lt 1 lw 2" << std::endl;
+    gnuplotScript << "set style line 2 lc rgb 'green' dt 2 lw 2" << std::endl;
+    gnuplotScript << "set style line 3 lc rgb 'red' dt 2 lw 2" << std::endl;
+    gnuplotScript << "set style line 4 lc rgb 'cyan' dt 2 lw 2" << std::endl;
+    
+    gnuplotScript << "plot \""
+                  << "./plot/files/interpolated_points_RBF.dat" << "\" with lines linestyle 1 title \"RBF interpolation\","
+                  << " \"./plot/files/data.dat\" with points pointtype 7 title \"Regressors\","
+                  << " \"./plot/files/point1.dat\" with lines linestyle 2 title \"1st point contribution\","
+                  << " \"./plot/files/point2.dat\" with lines linestyle 3 title \"2nd point contribution\","
+                  << " \"./plot/files/point3.dat\" with lines linestyle 4 title \"3rd point contribution\""
+                  << std::endl;
+
+
     
     if (EXPORT)
     {   
@@ -88,7 +142,7 @@ int main() {
     // Create the matrix with the known parameters
     Eigen::MatrixXd parameters(num_measures, num_params);
     parameters <<   1,
-                    2,
+                    3,
                   3.5;
     
     // Create the vector with the known results corresponding to parameters
@@ -100,10 +154,9 @@ int main() {
     // Create the values of the parameters for which we want the interpolation
     Eigen::MatrixXd parametersFORinterp(num_points, num_params);
 
-    int j{};
     for (size_t i = 0; i < num_points; ++i)
     {   
-        parametersFORinterp(i,j) = inf + i * (sup - inf) / (num_points-1);
+        parametersFORinterp(i,0) = inf + i * (sup - inf) / (num_points-1);
     }
 
     // Define the vectors to store the coefficients of the interpolations
@@ -113,6 +166,20 @@ int main() {
     double scale_factor{sqrt(0.5)};
     RBFInterpolator interpolatorRBF(&RBFunctions::gaussian, scale_factor);
     Eigen::VectorXd RBF_points_interpolated = interpolatorRBF.interpolate(parametersFORinterp, parameters, measurements, &regressionRBF);
+
+    // Datapoint's contribution to the interpolant
+
+    Eigen::VectorXd point1(num_points);
+    Eigen::VectorXd point2(num_points);
+    Eigen::VectorXd point3(num_points);
+
+
+    for (size_t i = 0; i < num_points; ++i)
+    {
+        point1(i) = regressionRBF(0) * RBFunctions::gaussian((parametersFORinterp(i,0) - parameters(0,0)) , scale_factor);
+        point2(i) = regressionRBF(1) * RBFunctions::gaussian((parametersFORinterp(i,0) - parameters(1,0)) , scale_factor);
+        point3(i) = regressionRBF(2) * RBFunctions::gaussian((parametersFORinterp(i,0) - parameters(2,0)) , scale_factor);
+    }
 
 
     //////////////////////////////////////////////////
@@ -127,7 +194,6 @@ int main() {
 
         if (regressionRBF.size() != 0)
         {
-
             std::cout << "______________________________" << std::endl;
 
             std::cout << "||" << std::setw(5) << ""
@@ -153,7 +219,7 @@ int main() {
     //////////////////////////////////////////////////
 
     bool EXPORT{true};
-    plotData(parametersFORinterp, RBF_points_interpolated, parameters, measurements, EXPORT);
+    plotData(parametersFORinterp, RBF_points_interpolated, parameters, measurements, point1, point2, point3, EXPORT);
 
     return 0;
 }
