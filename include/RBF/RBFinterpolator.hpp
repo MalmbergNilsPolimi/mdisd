@@ -10,6 +10,7 @@ class RBFInterpolator : public Interpolator {
 private:
     std::function<double(double, double)> rbfunction; /**< RBF function. */
     double r0; /**< Scale factor. */
+    bool normalizeRBF; /**< Normalization of RBF. */
 
 public:
     /**
@@ -18,8 +19,8 @@ public:
      * @param rbfunction The RBF function.
      * @param r0 The scale factor.
      */
-    RBFInterpolator(std::function<double(double, double)> rbfunction, double r0)
-        : rbfunction(rbfunction), r0(r0) {}
+    RBFInterpolator(std::function<double(double, double)> rbfunction, double r0, bool normalizeRBF=false)
+        : rbfunction(rbfunction), r0(r0), normalizeRBF(normalizeRBF) {}
 
     /**
      * @brief Interpolates a value based on given parameters and measurements using RBF method.
@@ -33,8 +34,9 @@ public:
                                 const Eigen::MatrixXd& parameters,
                                 const Eigen::VectorXd& measurements) const override;
 
+  
     Eigen::VectorXd interpolate(const Eigen::MatrixXd& parametersFORinterp,
-                            const Eigen::MatrixXd& parameters,
-                            const Eigen::VectorXd& measurements,
-                            Eigen::VectorXd* regression) const override;
+                                const Eigen::MatrixXd& parameters,
+                                const Eigen::VectorXd& measurements,
+                                Eigen::VectorXd* regression) const override;
 };
