@@ -19,28 +19,34 @@ void printTable(const Eigen::VectorXd& dimensions,
                 const Eigen::VectorXd& real_values,
                 const Eigen::VectorXd& RBF_interpolations,
                 const Eigen::VectorXd& RBF_errors,
+                const Eigen::VectorXd& RBF_norm_interpolations,
+                const Eigen::VectorXd& RBF_norm_errors,
                 const Eigen::VectorXd& OLS_interpolations,
                 const Eigen::VectorXd& OLS_errors) {
     // Affichage du tableau
-    std::cout << "_______________________________________________________________________________________________________________" << std::endl;
+    std::cout << "________________________________________________________________________________________________________________________________________________________" << std::endl;
     std::cout << std::setw(6) << std::left << "|| "
               << std::setw(21) << std::left << "|| Real Value"
               << std::setw(21) << std::left << "|| RBF Interpolation"
               << std::setw(20) << std::left << "| RBF Error"
+              << std::setw(21) << std::left << "|| NRBF Interpolation"
+              << std::setw(20) << std::left << "| NRBF Error"
               << std::setw(21) << std::left << "|| OLS Interpolation"
               << std::setw(20) << std::left << "| OLS Error"
               << "||" << std::endl;
-    std::cout << "_______________________________________________________________________________________________________________" << std::endl;
+    std::cout << "________________________________________________________________________________________________________________________________________________________" << std::endl;
     for (int i = 0; i < dimensions.size(); ++i) {
         std::cout << "||" << std::setw(4) << std::left << dimensions(i)
                   << "||" << std::setw(19) << std::left << real_values(i)
                   << "||" << std::setw(19) << std::left << RBF_interpolations(i)
                   << "|" << std::setw(19) << std::left << RBF_errors(i)
+                  << "||" << std::setw(19) << std::left << RBF_norm_interpolations(i)
+                  << "|" << std::setw(19) << std::left << RBF_norm_errors(i)
                   << "||" << std::setw(19) << std::left << OLS_interpolations(i)
                   << "|" << std::setw(19) << std::left << OLS_errors(i)
                   << "||" << std::endl;
     }
-    std::cout << "_______________________________________________________________________________________________________________" << std::endl;
+    std::cout << "________________________________________________________________________________________________________________________________________________________" << std::endl;
 }
 
 int main() {
@@ -113,6 +119,11 @@ int main() {
     RBFInterpolator interpolatorRBF(&RBFunctions::multiquadratic, scale_factor); // (THE USER CAN CHANGE HERE THE USED RBFUNCTION)
     Eigen::VectorXd RBF_points_interpolated = interpolatorRBF.interpolate(parametersFORinterp, parameters, measurements);
 
+    // Use of normalized RBF interpolation method
+    bool normalize{true};
+    RBFInterpolator interpolatorRBFnorm(&RBFunctions::multiquadratic, scale_factor, normalize);
+    Eigen::VectorXd RBF_norm_points_interpolated = interpolatorRBFnorm.interpolate(parametersFORinterp, parameters, measurements);
+
     // Use of OLS approximation method
     OLSInterpolator interpolatorOLS;
     Eigen::VectorXd OLS_points_interpolated = interpolatorOLS.interpolate(parametersFORinterp, parameters, measurements);
@@ -130,10 +141,11 @@ int main() {
     //////////////////////////////////////////////////
 
     Eigen::VectorXd RBF_relative_errors = ((RBF_points_interpolated - points_real).array() / points_real.array().abs());
+    Eigen::VectorXd RBF_norm_relative_errors = ((RBF_norm_points_interpolated - points_real).array() / points_real.array().abs());
     Eigen::VectorXd OLS_relative_errors = ((OLS_points_interpolated - points_real).array() / points_real.array().abs());
 
     Eigen::VectorXd points = Eigen::VectorXd::LinSpaced(num_points, 1, num_points);
-    printTable(points, points_real, RBF_points_interpolated, RBF_relative_errors, OLS_points_interpolated, OLS_relative_errors);
+    printTable(points, points_real, RBF_points_interpolated, RBF_relative_errors, RBF_norm_points_interpolated, RBF_norm_relative_errors, OLS_points_interpolated, OLS_relative_errors);
 
     return 0;
 }
