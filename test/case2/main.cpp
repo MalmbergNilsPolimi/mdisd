@@ -8,9 +8,10 @@
 #include "OLSinterpolator.hpp"
 
 
-void plotData(const Eigen::MatrixXd& x, const Eigen::VectorXd& y_interpolatedRBF,
-              const Eigen::VectorXd& y_interpolatedRBFnorm, const Eigen::VectorXd& y_interpolatedOLS,
+void plotData(const Eigen::MatrixXd& x, const Eigen::VectorXd& y_interpolatedRBF, const Eigen::VectorXd& y_interpolatedRBFnorm,
+              const Eigen::VectorXd& y_interpolatedRBFpoly, const Eigen::VectorXd& y_interpolatedOLS,
               const Eigen::MatrixXd& x_data, const Eigen::VectorXd& y_data, const bool EXPORT) {
+
     std::filesystem::create_directories("./plot/");
     std::filesystem::create_directories("./plot/files/");
     std::filesystem::create_directories("./plot/figures/");
@@ -38,6 +39,18 @@ void plotData(const Eigen::MatrixXd& x, const Eigen::VectorXd& y_interpolatedRBF
         dataFileRBFnorm << x(i, 0) << " " << y_interpolatedRBFnorm(i) << std::endl;
     }
     dataFileRBFnorm.close();
+
+    // RBFP
+    std::ofstream dataFileRBFpoly("./plot/files/interpolated_points_RBF_poly.dat");
+    if (!dataFileRBFpoly.is_open()) {
+        std::cerr << "Error: Unable to open data file." << std::endl;
+        return;
+    }
+
+    for (int i = 0; i < x.rows(); ++i) {
+        dataFileRBFpoly << x(i, 0) << " " << y_interpolatedRBFpoly(i) << std::endl;
+    }
+    dataFileRBFpoly.close();
 
     // OLS
     std::ofstream dataFileOLS("./plot/files/interpolated_points_OLS.dat");
@@ -81,6 +94,7 @@ void plotData(const Eigen::MatrixXd& x, const Eigen::VectorXd& y_interpolatedRBF
     gnuplotScript << "set key box" << std::endl;
     gnuplotScript << "plot \"" << "./plot/files/interpolated_points_RBF.dat" << "\" with lines title \"RBF interpolation\","
                 << " \"" << "./plot/files/interpolated_points_RBF_norm.dat" << "\" with lines title \"NRBF interpolation\","
+                << " \"" << "./plot/files/interpolated_points_RBF_poly.dat" << "\" with points pointtype 7 title \"RBFP interpolation\","
                 << " \"" << "./plot/files/interpolated_points_OLS.dat" << "\" with lines title \"OLS interpolation\","
                 << " \"" << "./plot/files/data.dat" << "\" with points pointtype 7 title \"Regressors\"" 
                 << std::endl;
@@ -151,6 +165,7 @@ int main() {
     // Define the vectors to store the coefficients of the interpolations
     Eigen::VectorXd regressionRBF;
     Eigen::VectorXd regressionRBFnorm;
+    Eigen::VectorXd regressionRBFpoly;
     Eigen::VectorXd regressionOLS;
 
     // Use of RBF interpolation method
@@ -159,9 +174,16 @@ int main() {
     Eigen::VectorXd RBF_points_interpolated = interpolatorRBF.interpolate(parametersFORinterp, parameters, measurements, &regressionRBF);
 
     // Use of normalized RBF interpolation method
-    RBFInterpolator interpolatorRBFnorm(&RBFunctions::multiquadratic, scale_factor);
+    bool normalizeRBF{true};
+    RBFInterpolator interpolatorRBFnorm(&RBFunctions::multiquadratic, scale_factor, normalizeRBF);
     Eigen::VectorXd RBF_norm_points_interpolated = interpolatorRBFnorm.interpolate(parametersFORinterp, parameters, measurements, &regressionRBFnorm);
   
+    // Use of RBF augmented with polynomial
+    normalizeRBF=false;
+    bool polynomialRBF{true};
+    RBFInterpolator interpolatorRBFpoly(&RBFunctions::multiquadratic, scale_factor, normalizeRBF, polynomialRBF);
+    Eigen::VectorXd RBF_poly_points_interpolated = interpolatorRBFpoly.interpolate(parametersFORinterp, parameters, measurements, &regressionRBFpoly);
+
     // Use of OLS approximation method
     OLSInterpolator interpolatorOLS;
     Eigen::VectorXd OLS_points_interpolated = interpolatorOLS.interpolate(parametersFORinterp, parameters, measurements, &regressionOLS);
@@ -196,9 +218,8 @@ int main() {
 
         }
         
-        //std::cout << "RBF interpolated value: " << RBF_points_interpolated.transpose() << std::endl;
-
-        std::cout << std::endl;
+        std::cout << "\n" <<std::endl;
+        
 
         std::cout << "_USING NORMALIZED RADIAL BASIS FUNCTIONS_" << std::endl;
 
@@ -221,9 +242,31 @@ int main() {
 
         }
         
-        //std::cout << "NRBF interpolated value: " << RBF_points_interpolated.transpose() << std::endl;
+        std::cout << "\n" <<std::endl;
+        
 
-        std::cout << std::endl;
+        std::cout << "_USING POLYNOMIAL RADIAL BASIS FUNCTIONS_" << std::endl;
+
+        if (regressionRBF.size() != 0)
+
+        {
+            std::cout << "______________________________" << std::endl;
+
+            std::cout << "||" << std::setw(5) << ""
+                      << std::setw(21) << std::left << "|| Weights"
+                      << "||" << std::endl;
+
+            std::cout << "______________________________" << std::endl;
+            for (int i = 0; i < regressionRBFpoly.size(); ++i) {
+                std::cout << "|| " << std::setw(4) << std::left << i
+                          << "|| " << std::setw(18) << std::left << regressionRBFpoly(i)
+                          << "|| " << std::endl;
+            }
+            std::cout << "______________________________" << std::endl;
+
+        }
+
+        std::cout << "\n" << std::endl;
 
         std::cout << "_USING ORDINARY LEAST SQUARES_" << std::endl;
 
@@ -253,7 +296,7 @@ int main() {
     //////////////////////////////////////////////////
 
     bool EXPORT{true};
-    plotData(parametersFORinterp, RBF_points_interpolated, RBF_norm_points_interpolated, OLS_points_interpolated, parameters, measurements, EXPORT);
+    plotData(parametersFORinterp, RBF_points_interpolated, RBF_norm_points_interpolated, RBF_poly_points_interpolated, OLS_points_interpolated, parameters, measurements, EXPORT);
 
     return 0;
 }
