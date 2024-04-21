@@ -92,10 +92,13 @@ void plotData(const Eigen::MatrixXd& x, const Eigen::VectorXd& y_interpolatedRBF
     gnuplotScript << "set xlabel \"x\"" << std::endl;
     gnuplotScript << "set ylabel \"interpolated f(x)\"" << std::endl;
     gnuplotScript << "set key box" << std::endl;
-    gnuplotScript << "plot \"" << "./plot/files/interpolated_points_RBF.dat" << "\" with lines title \"RBF interpolation\","
-                << " \"" << "./plot/files/interpolated_points_RBF_norm.dat" << "\" with lines title \"NRBF interpolation\","
+    gnuplotScript << "set style line 1 lc rgb 'blue' lt 1 lw 2" << std::endl;
+    gnuplotScript << "set style line 2 lc rgb 'orange' lt 1 lw 2" << std::endl;
+    gnuplotScript << "set style line 3 lc rgb 'red' dt 2 lw 2" << std::endl;
+    gnuplotScript << "plot \"" << "./plot/files/interpolated_points_RBF.dat" << "\" with lines linestyle 1 title \"RBF interpolation\","
+                << " \"" << "./plot/files/interpolated_points_RBF_norm.dat" << "\" with lines linestyle 2 title \"NRBF interpolation\","
                 << " \"" << "./plot/files/interpolated_points_RBF_poly.dat" << "\" with points pointtype 7 title \"RBFP interpolation\","
-                << " \"" << "./plot/files/interpolated_points_OLS.dat" << "\" with lines title \"OLS interpolation\","
+                << " \"" << "./plot/files/interpolated_points_OLS.dat" << "\" with lines linestyle 3 title \"OLS interpolation\","
                 << " \"" << "./plot/files/data.dat" << "\" with points pointtype 7 title \"Regressors\"" 
                 << std::endl;
     gnuplotScript << "set key bottom right" << std::endl;

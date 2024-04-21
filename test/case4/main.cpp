@@ -176,7 +176,6 @@ int main() {
         }
         
         std::cout << "\n" << std::endl;
-        //std::cout << "RBF interpolated value: " << RBF_points_interpolated.transpose() << std::endl;
 
         if (regressionRBFpoly.size() != 0)
         {
@@ -194,7 +193,6 @@ int main() {
                           << "|| " << std::endl;
             }
             std::cout << "______________________________" << std::endl;
-
         }
     }
 
