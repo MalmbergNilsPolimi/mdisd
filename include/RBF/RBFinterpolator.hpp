@@ -11,6 +11,7 @@ private:
     std::function<double(double, double)> rbfunction; /**< RBF function. */
     double r0; /**< Scale factor. */
     bool normalizeRBF; /**< Normalization of RBF. */
+    bool polynomialRBF; /**< Add polynomial term. */
 
 public:
     /**
@@ -19,8 +20,9 @@ public:
      * @param rbfunction The RBF function.
      * @param r0 The scale factor.
      */
-    RBFInterpolator(std::function<double(double, double)> rbfunction, double r0, bool normalizeRBF=false)
-        : rbfunction(rbfunction), r0(r0), normalizeRBF(normalizeRBF) {}
+    RBFInterpolator(std::function<double(double, double)> rbfunction, double r0,
+                    bool normalizeRBF=false, bool polynomialRBF=false)
+        : rbfunction(rbfunction), r0(r0), normalizeRBF(normalizeRBF), polynomialRBF(polynomialRBF) {}
 
     /**
      * @brief Interpolates a value based on given parameters and measurements using RBF method.
