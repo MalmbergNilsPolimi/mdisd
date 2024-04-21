@@ -59,7 +59,7 @@ $(OBJ_DIR)/OLSinterpolator.o: $(OLS_INTERPOLATOR_SRC)
 # Clean
 clean:
 	@echo "Cleaning..."
-	@rm -rf $(OBJ_DIR) $(BIN_DIR)
+	@rm -rf $(OBJ_DIR) $(BIN_DIR) ./plot/
 	@echo "Done."
 
 # Phony targets
