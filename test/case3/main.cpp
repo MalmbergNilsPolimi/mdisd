@@ -189,7 +189,7 @@ int main() {
     auto funToInterpolate = [](const Eigen::VectorXd& params) {
         double res = 0;
         for (int i = 0; i < params.size(); ++i) {
-            res += std::pow(params(i), i);
+            res += params(i)*exp(params(i)/2.);
         }
         return res;
     };

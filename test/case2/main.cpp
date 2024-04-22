@@ -91,7 +91,7 @@ void plotData(const Eigen::MatrixXd& x, const Eigen::VectorXd& y_interpolatedRBF
     gnuplotScript << "set title \"" << title << "\"" << std::endl;
     gnuplotScript << "set xlabel \"x\"" << std::endl;
     gnuplotScript << "set ylabel \"interpolated f(x)\"" << std::endl;
-    gnuplotScript << "set key box" << std::endl;
+    gnuplotScript << "set key box bottom right" << std::endl;
     gnuplotScript << "set style line 1 lc rgb 'blue' lt 1 lw 2" << std::endl;
     gnuplotScript << "set style line 2 lc rgb 'orange' lt 1 lw 2" << std::endl;
     gnuplotScript << "set style line 3 lc rgb 'red' dt 2 lw 2" << std::endl;
@@ -101,7 +101,6 @@ void plotData(const Eigen::MatrixXd& x, const Eigen::VectorXd& y_interpolatedRBF
                 << " \"" << "./plot/files/interpolated_points_OLS.dat" << "\" with lines linestyle 3 title \"OLS interpolation\","
                 << " \"" << "./plot/files/data.dat" << "\" with points pointtype 7 title \"Regressors\"" 
                 << std::endl;
-    gnuplotScript << "set key bottom right" << std::endl;
         
     
     if (EXPORT)
@@ -109,6 +108,7 @@ void plotData(const Eigen::MatrixXd& x, const Eigen::VectorXd& y_interpolatedRBF
         // The export "cancel" the plot
         // Replot to see it in a window
         gnuplotScript << "set terminal wxt" << std::endl;
+        gnuplotScript << "set key box bottom right" << std::endl;
         gnuplotScript << "replot" << std::endl;
     }
 

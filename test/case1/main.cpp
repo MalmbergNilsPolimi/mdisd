@@ -115,41 +115,34 @@ void plotData(const Eigen::MatrixXd& x, const Eigen::VectorXd& y_interpolatedRBF
 
 
 
-    std::string title{"1D interpolation : test case from [du Toit]"};
+    std::string title{"1D interpolation : test case from [Wilna du Toit]"};
 
 
     // GNUplot commands
-    std::ofstream gnuplotScript("./plot/files/plot_script.gnu");
+    std::ofstream gnuplotScript1("./plot/files/plot_script1.gnu");
     
     if (EXPORT)
     {
         // To export the plot in svg format
-        gnuplotScript << "set terminal svg" << std::endl;
-        gnuplotScript << "set output \"" << "./plot/figures/case1_plot.svg" << "\"" << std::endl;
+        gnuplotScript1 << "set terminal svg" << std::endl;
+        gnuplotScript1 << "set output \"" << "./plot/figures/case1_plot1.svg" << "\"" << std::endl;
     }
 
-    gnuplotScript << "set title \"" << title << "\"" << std::endl;
-    gnuplotScript << "set xlabel \"x\"" << std::endl;
-    gnuplotScript << "set ylabel \"interpolated f(x)\"" << std::endl;
-    gnuplotScript << "set key box" << std::endl;
-    gnuplotScript << "set style line 1 lc rgb 'blue' lt 1 lw 2" << std::endl;
-    gnuplotScript << "set style line 2 lc rgb 'orange' lt 1 lw 2" << std::endl;
-    gnuplotScript << "set style line 3 lc rgb 'green' dt 2 lw 2" << std::endl;
-    gnuplotScript << "set style line 4 lc rgb 'red' dt 2 lw 2" << std::endl;
-    gnuplotScript << "set style line 5 lc rgb 'cyan' dt 2 lw 2" << std::endl;
-    gnuplotScript << "set style line 6 lc rgb 'purple' lt 1 lw 2" << std::endl;
-    gnuplotScript << "set style line 7 lc rgb 'black' lt 1 lw 2" << std::endl;
+    gnuplotScript1 << "set title \"" << title << "\"" << std::endl;
+    gnuplotScript1 << "set xlabel \"x\"" << std::endl;
+    gnuplotScript1 << "set ylabel \"interpolated f(x)\"" << std::endl;
+    gnuplotScript1 << "set key box" << std::endl;
+    gnuplotScript1 << "set style line 1 lc rgb 'blue' lt 1 lw 2" << std::endl;
+    gnuplotScript1 << "set style line 2 lc rgb 'orange' dt 2 lw 2" << std::endl;
+    gnuplotScript1 << "set style line 3 lc rgb 'purple' dt 2 lw 2" << std::endl;
+    gnuplotScript1 << "set style line 4 lc rgb 'red' dt 2 lw 2" << std::endl;
     
-    gnuplotScript << "plot \""
-                  << "./plot/files/interpolated_points_RBF.dat" << "\" with lines linestyle 1 title \"RBF interpolation\","
-                  << " \"./plot/files/interpolated_points_RBF_norm.dat" << "\" with lines linestyle 6 title \"NRBF interpolation\","
-                  << " \"./plot/files/interpolated_points_RBF_poly.dat" << "\" with lines linestyle 7 title \"RBFP interpolation\","
-                  << " \"./plot/files/data.dat\" with points pointtype 7 title \"Regressors\","
-                  << " \"./plot/files/interpolated_points_OLS.dat" << "\" with lines linestyle 2 title \"OLS interpolation\","
-                  
-                  << " \"./plot/files/point1.dat\" with lines linestyle 3 title \"1st point RBF contribution\","
-                  << " \"./plot/files/point2.dat\" with lines linestyle 4 title \"2nd point RBF contribution\","
-                  << " \"./plot/files/point3.dat\" with lines linestyle 5 title \"3rd point RBF contribution\""
+    gnuplotScript1 << "plot \""
+                  << "./plot/files/data.dat" << "\" with points pointtype 7 title \"Regressors\"," 
+                  << " \"./plot/files/interpolated_points_RBF.dat\" with lines linestyle 1 title \"RBF interpolation\","   
+                  << " \"./plot/files/point1.dat\" with lines linestyle 2 title \"1st point RBF contribution\","
+                  << " \"./plot/files/point2.dat\" with lines linestyle 3 title \"2nd point RBF contribution\","
+                  << " \"./plot/files/point3.dat\" with lines linestyle 4 title \"3rd point RBF contribution\""
                   << std::endl;
 
 
@@ -158,14 +151,58 @@ void plotData(const Eigen::MatrixXd& x, const Eigen::VectorXd& y_interpolatedRBF
     {   
         // The export "cancel" the plot
         // Replot to see it in a window
-        gnuplotScript << "set terminal wxt" << std::endl;
-        gnuplotScript << "replot" << std::endl;
+        gnuplotScript1 << "set terminal wxt" << std::endl;
+        gnuplotScript1 << "replot" << std::endl;
     }
 
-    gnuplotScript.close();
+    gnuplotScript1.close();
+
+
+
+
+    // GNUplot commands
+    std::ofstream gnuplotScript2("./plot/files/plot_script2.gnu");
+    
+    if (EXPORT)
+    {
+        // To export the plot in svg format
+        gnuplotScript2 << "set terminal svg" << std::endl;
+        gnuplotScript2 << "set output \"" << "./plot/figures/case1_plot2.svg" << "\"" << std::endl;
+    }
+
+    gnuplotScript2 << "set title \"" << title << "\"" << std::endl;
+    gnuplotScript2 << "set xlabel \"x\"" << std::endl;
+    gnuplotScript2 << "set ylabel \"interpolated f(x)\"" << std::endl;
+    gnuplotScript2 << "set key box" << std::endl;
+    gnuplotScript2 << "set style line 1 lc rgb 'blue' lt 1 lw 2" << std::endl;
+    gnuplotScript2 << "set style line 2 lc rgb 'orange' lt 1 lw 2" << std::endl;
+    gnuplotScript2 << "set style line 3 lc rgb 'red' lt 1 lw 2" << std::endl;
+    gnuplotScript2 << "set style line 4 lc rgb 'black' dt 2 lw 2" << std::endl;
+    
+    gnuplotScript2 << "plot \""
+                  << "./plot/files/data.dat" << "\" with points pointtype 7 title \"Regressors\","
+                  << " \"./plot/files/interpolated_points_RBF.dat" << "\" with lines linestyle 1 title \"RBF interpolation\","
+                  << " \"./plot/files/interpolated_points_RBF_norm.dat" << "\" with lines linestyle 2 title \"NRBF interpolation\","
+                  << " \"./plot/files/interpolated_points_RBF_poly.dat" << "\" with lines linestyle 3 title \"RBFP interpolation\","
+                  << " \"./plot/files/interpolated_points_OLS.dat" << "\" with lines linestyle 4 title \"OLS interpolation\""
+                  << std::endl;
+
+
+    
+    if (EXPORT)
+    {   
+        // The export "cancel" the plot
+        // Replot to see it in a window
+        gnuplotScript2 << "set terminal wxt" << std::endl;
+        gnuplotScript2 << "replot" << std::endl;
+    }
+
+    gnuplotScript2.close();
+
 
     // Execute GNUplot
-    system("gnuplot -persist ./plot/files/plot_script.gnu");
+    system("gnuplot -persist ./plot/files/plot_script1.gnu");
+    system("gnuplot -persist ./plot/files/plot_script2.gnu");
 }
 
 

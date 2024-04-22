@@ -78,14 +78,15 @@ int main() {
 
     gnuplotScriptGauss << "set title \"Gaussian basis function\"" << std::endl;
     gnuplotScriptGauss << "set key box" << std::endl;
-    gnuplotScriptGauss << "plot './plot/files/data_gaussian.dat' index 0 using 1:2:3 with lines title sprintf('r_0 = %.2f', " << scale_factor(0) << ")" << std::endl;
-    for (size_t i = 1; i < scale_factor.size(); ++i)
+    gnuplotScriptGauss << "plot ";
+    for (size_t i = 0; i < scale_factor.size(); ++i)
     {
-        gnuplotScriptGauss << "replot './plot/files/data_gaussian.dat' index " << i << " using 1:2:3 with lines title sprintf('r_0 = %.2f', " << scale_factor(i) << ")" << std::endl;
+        if (i > 0) {
+            gnuplotScriptGauss << ", ";
+        }
+        gnuplotScriptGauss << "'./plot/files/data_gaussian.dat' index " << i << " using 1:2:3 with lines title sprintf('r_0 = %.2f', " << scale_factor(i) << ")";
     }
-
-
-
+    gnuplotScriptGauss << std::endl;
 
     if (EXPORT)
     {   
@@ -130,13 +131,16 @@ int main() {
     }
 
     gnuplotScriptmultiquad << "set title \"Multiquadratic basis function\"" << std::endl;
-    gnuplotScriptmultiquad << "set key box" << std::endl;
-    gnuplotScriptmultiquad << "plot './plot/files/data_multiquad.dat' index 0 using 1:2:3 with lines title sprintf('r_0 = %.2f', " << scale_factor(0) << ")" << std::endl;
-    for (size_t i = 1; i < scale_factor.size(); ++i)
+    gnuplotScriptmultiquad << "set key box bottom right" << std::endl;
+    gnuplotScriptmultiquad << "plot ";
+    for (size_t i = 0; i < scale_factor.size(); ++i)
     {
-        gnuplotScriptmultiquad << "replot './plot/files/data_multiquad.dat' index " << i << " using 1:2:3 with lines title sprintf('r_0 = %.2f', " << scale_factor(i) << ")" << std::endl;
+        if (i > 0) {
+            gnuplotScriptmultiquad << ", ";
+        }
+        gnuplotScriptmultiquad << "'./plot/files/data_multiquad.dat' index " << i << " using 1:2:3 with lines title sprintf('r_0 = %.2f', " << scale_factor(i) << ")";
     }
-    gnuplotScriptmultiquad << "set key bottom right" << std::endl;
+    gnuplotScriptmultiquad << std::endl;
 
     if (EXPORT)
     {   
@@ -182,13 +186,16 @@ int main() {
     }
 
     gnuplotScriptinvmultiquad << "set title \"Inverse multiquadratic basis function\"" << std::endl;
-    gnuplotScriptinvmultiquad << "set key box" << std::endl;
-    gnuplotScriptinvmultiquad << "plot './plot/files/data_invmultiquad.dat' index 0 using 1:2:3 with lines title sprintf('r_0 = %.2f', " << scale_factor(0) << ")" << std::endl;
-    for (size_t i = 1; i < scale_factor.size(); ++i)
+    gnuplotScriptinvmultiquad << "set key box top right" << std::endl;
+    gnuplotScriptinvmultiquad << "plot ";
+    for (size_t i = 0; i < scale_factor.size(); ++i)
     {
-        gnuplotScriptinvmultiquad << "replot './plot/files/data_invmultiquad.dat' index " << i << " using 1:2:3 with lines title sprintf('r_0 = %.2f', " << scale_factor(i) << ")" << std::endl;
+        if (i > 0) {
+            gnuplotScriptinvmultiquad << ", ";
+        }
+        gnuplotScriptinvmultiquad << "'./plot/files/data_invmultiquad.dat' index " << i << " using 1:2:3 with lines title sprintf('r_0 = %.2f', " << scale_factor(i) << ")";
     }
-    gnuplotScriptinvmultiquad << "set key top right" << std::endl;
+    gnuplotScriptinvmultiquad << std::endl;
 
     if (EXPORT)
     {   
@@ -233,13 +240,17 @@ int main() {
     }
 
     gnuplotScriptthinPlateSpline << "set title \"Thin plate spline basis function\"" << std::endl;
-    gnuplotScriptthinPlateSpline << "set key box" << std::endl;
-    gnuplotScriptthinPlateSpline << "plot [0:10]'./plot/files/data_thinPlateSpline.dat' index 0 using 1:2:3 with lines title sprintf('r_0 = %.2f', " << scale_factor(0) << ")" << std::endl;
-    for (size_t i = 1; i < scale_factor.size(); ++i)
+    gnuplotScriptthinPlateSpline << "set key box top left" << std::endl;
+    gnuplotScriptthinPlateSpline << "plot [0:10]";
+    for (size_t i = 0; i < scale_factor.size(); ++i)
     {
-        gnuplotScriptthinPlateSpline << "replot './plot/files/data_thinPlateSpline.dat' index " << i << " using 1:2:3 with lines title sprintf('r_0 = %.2f', " << scale_factor(i) << ")" << std::endl;
+        if (i > 0) {
+            gnuplotScriptthinPlateSpline << ", ";
+        }
+        gnuplotScriptthinPlateSpline << "'./plot/files/data_thinPlateSpline.dat' index " << i << " using 1:2:3 with lines title sprintf('r_0 = %.2f', " << scale_factor(i) << ")";
     }
-    gnuplotScriptthinPlateSpline << "set key top left" << std::endl;
+    gnuplotScriptthinPlateSpline << std::endl;
+    //gnuplotScriptthinPlateSpline << "set key top left" << std::endl;
 
     if (EXPORT)
     {   
