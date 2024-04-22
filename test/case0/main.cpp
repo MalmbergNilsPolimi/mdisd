@@ -58,7 +58,7 @@ int main() {
     {
         for (size_t j = 0; j < tab_x.size(); ++j)
         {
-            dataFileGauss << tab_x(j) << " " << gaussian_mat(i,j) << " " << std::endl;
+            dataFileGauss << tab_x(j) << " " << gaussian_mat(i,j) << " " << scale_factor(i) << " " << std::endl;
         }
         dataFileGauss << "\n\n";
     }
@@ -78,11 +78,14 @@ int main() {
 
     gnuplotScriptGauss << "set title \"Gaussian basis function\"" << std::endl;
     gnuplotScriptGauss << "set key box" << std::endl;
+    gnuplotScriptGauss << "plot './plot/files/data_gaussian.dat' index 0 using 1:2:3 with lines title sprintf('r_0 = %.2f', " << scale_factor(0) << ")" << std::endl;
+    for (size_t i = 1; i < scale_factor.size(); ++i)
+    {
+        gnuplotScriptGauss << "replot './plot/files/data_gaussian.dat' index " << i << " using 1:2:3 with lines title sprintf('r_0 = %.2f', " << scale_factor(i) << ")" << std::endl;
+    }
 
-    gnuplotScriptGauss << "plot for [i=0:" << scale_factor.size() - 1 << "] "
-                << "'./plot/files/data_gaussian.dat' "
-                << "index i "
-                << "using 1:2 with lines title sprintf('r_0 = %.2f', i)" << std::endl;
+
+
 
     if (EXPORT)
     {   
@@ -108,7 +111,7 @@ int main() {
     {
         for (size_t j = 0; j < tab_x.size(); ++j)
         {
-            dataFilemultiquad << tab_x(j) << " " << multiquadratic_mat(i,j) << " " << std::endl;
+            dataFilemultiquad << tab_x(j) << " " << multiquadratic_mat(i,j) << " " << scale_factor(i) << " "  << std::endl;
         }
         dataFilemultiquad << "\n\n";
     }
@@ -128,11 +131,11 @@ int main() {
 
     gnuplotScriptmultiquad << "set title \"Multiquadratic basis function\"" << std::endl;
     gnuplotScriptmultiquad << "set key box" << std::endl;
-
-    gnuplotScriptmultiquad << "plot for [i=0:" << scale_factor.size() - 1 << "] "
-                << "'./plot/files/data_multiquad.dat' "
-                << "index i "
-                << "using 1:2 with lines title sprintf('r_0 = %.2f', i)" << std::endl;
+    gnuplotScriptmultiquad << "plot './plot/files/data_multiquad.dat' index 0 using 1:2:3 with lines title sprintf('r_0 = %.2f', " << scale_factor(0) << ")" << std::endl;
+    for (size_t i = 1; i < scale_factor.size(); ++i)
+    {
+        gnuplotScriptmultiquad << "replot './plot/files/data_multiquad.dat' index " << i << " using 1:2:3 with lines title sprintf('r_0 = %.2f', " << scale_factor(i) << ")" << std::endl;
+    }
     gnuplotScriptmultiquad << "set key bottom right" << std::endl;
 
     if (EXPORT)
@@ -160,7 +163,7 @@ int main() {
     {
         for (size_t j = 0; j < tab_x.size(); ++j)
         {
-            dataFileinvmultiquad << tab_x(j) << " " << inverseMultiquadratic_mat(i,j) << " " << std::endl;
+            dataFileinvmultiquad << tab_x(j) << " " << inverseMultiquadratic_mat(i,j) << " " << scale_factor(i) << " "  << std::endl;
         }
         dataFileinvmultiquad << "\n\n";
     }
@@ -180,11 +183,11 @@ int main() {
 
     gnuplotScriptinvmultiquad << "set title \"Inverse multiquadratic basis function\"" << std::endl;
     gnuplotScriptinvmultiquad << "set key box" << std::endl;
-
-    gnuplotScriptinvmultiquad << "plot for [i=0:" << scale_factor.size() - 1 << "] "
-                << "'./plot/files/data_invmultiquad.dat' "
-                << "index i "
-                << "using 1:2 with lines title sprintf('r_0 = %.2f', i)" << std::endl;
+    gnuplotScriptinvmultiquad << "plot './plot/files/data_invmultiquad.dat' index 0 using 1:2:3 with lines title sprintf('r_0 = %.2f', " << scale_factor(0) << ")" << std::endl;
+    for (size_t i = 1; i < scale_factor.size(); ++i)
+    {
+        gnuplotScriptinvmultiquad << "replot './plot/files/data_invmultiquad.dat' index " << i << " using 1:2:3 with lines title sprintf('r_0 = %.2f', " << scale_factor(i) << ")" << std::endl;
+    }
     gnuplotScriptinvmultiquad << "set key top right" << std::endl;
 
     if (EXPORT)
@@ -197,55 +200,55 @@ int main() {
     gnuplotScriptinvmultiquad.close();
 
 
-    // //////////////////////////////
-    // ///// Thin Plate Spline //////
-    // //////////////////////////////
+    //////////////////////////////
+    ///// Thin Plate Spline //////
+    //////////////////////////////
 
-    // std::ofstream dataFilethinPlateSpline("./plot/files/data_thinPlateSpline.dat");
-    // if (!dataFilethinPlateSpline.is_open()) {
-    //     std::cerr << "Error: Unable to open data file for data_thinPlateSpline." << std::endl;
-    //     return 1;
-    // }
+    std::ofstream dataFilethinPlateSpline("./plot/files/data_thinPlateSpline.dat");
+    if (!dataFilethinPlateSpline.is_open()) {
+        std::cerr << "Error: Unable to open data file for data_thinPlateSpline." << std::endl;
+        return 1;
+    }
 
-    // for (size_t i = 0; i < scale_factor.size(); ++i)
-    // {
-    //     for (size_t j = 0; j < tab_x.size(); ++j)
-    //     {
-    //         dataFilethinPlateSpline << tab_x(j) << " " << thinPlateSpline_mat(i,j) << " " << std::endl;
-    //     }
-    //     dataFilethinPlateSpline << "\n\n";
-    // }
-    // dataFilethinPlateSpline.close();
+    for (size_t i = 0; i < scale_factor.size(); ++i)
+    {
+        for (size_t j = 0; j < tab_x.size(); ++j)
+        {
+            dataFilethinPlateSpline << tab_x(j) << " " << thinPlateSpline_mat(i,j) << " " << scale_factor(i) << " "  << std::endl;
+        }
+        dataFilethinPlateSpline << "\n\n";
+    }
+    dataFilethinPlateSpline.close();
 
-    // std::ofstream gnuplotScriptthinPlateSpline("./plot/files/plot_thinPlateSpline.gnu");
-    // if (!gnuplotScriptthinPlateSpline.is_open()) {
-    //     std::cerr << "Error: Unable to open GNUplot script file." << std::endl;
-    //     return 1;
-    // }
+    std::ofstream gnuplotScriptthinPlateSpline("./plot/files/plot_thinPlateSpline.gnu");
+    if (!gnuplotScriptthinPlateSpline.is_open()) {
+        std::cerr << "Error: Unable to open GNUplot script file." << std::endl;
+        return 1;
+    }
 
-    // if (EXPORT)
-    // {
-    //     gnuplotScriptthinPlateSpline << "set terminal svg" << std::endl;
-    //     gnuplotScriptthinPlateSpline << "set output \"" << "./plot/figures/thinPlateSpline_plot.svg" << "\"" << std::endl;
-    // }
+    if (EXPORT)
+    {
+        gnuplotScriptthinPlateSpline << "set terminal svg" << std::endl;
+        gnuplotScriptthinPlateSpline << "set output \"" << "./plot/figures/thinPlateSpline_plot.svg" << "\"" << std::endl;
+    }
 
-    // gnuplotScriptthinPlateSpline << "set title \"Thin plate spline basis function\"" << std::endl;
-    // gnuplotScriptthinPlateSpline << "set key box" << std::endl;
+    gnuplotScriptthinPlateSpline << "set title \"Thin plate spline basis function\"" << std::endl;
+    gnuplotScriptthinPlateSpline << "set key box" << std::endl;
+    gnuplotScriptthinPlateSpline << "plot [0:10]'./plot/files/data_thinPlateSpline.dat' index 0 using 1:2:3 with lines title sprintf('r_0 = %.2f', " << scale_factor(0) << ")" << std::endl;
+    for (size_t i = 1; i < scale_factor.size(); ++i)
+    {
+        gnuplotScriptthinPlateSpline << "replot './plot/files/data_thinPlateSpline.dat' index " << i << " using 1:2:3 with lines title sprintf('r_0 = %.2f', " << scale_factor(i) << ")" << std::endl;
+    }
+    gnuplotScriptthinPlateSpline << "set key top left" << std::endl;
 
-    // gnuplotScriptthinPlateSpline << "plot for [i=0:" << scale_factor.size() - 1 << "] "
-    //             << "'./plot/files/data_thinPlateSpline.dat' "
-    //             << "index i "
-    //             << "using 1:2 with lines title sprintf('r_0 = %.2f', i)" << std::endl;
-    // gnuplotScriptthinPlateSpline << "set key top left" << std::endl;
-
-    // if (EXPORT)
-    // {   
-    //     gnuplotScriptthinPlateSpline << "set terminal wxt" << std::endl;
-    //     gnuplotScriptthinPlateSpline << "replot" << std::endl;
-    // }
+    if (EXPORT)
+    {   
+        gnuplotScriptthinPlateSpline << "set terminal wxt" << std::endl;
+        gnuplotScriptthinPlateSpline << "replot" << std::endl;
+    }
     
 
-    // gnuplotScriptthinPlateSpline.close();
+    gnuplotScriptthinPlateSpline.close();
 
 
 
@@ -253,7 +256,7 @@ int main() {
     system("gnuplot -persist ./plot/files/plot_gaussian.gnu");
     system("gnuplot -persist ./plot/files/plot_multiquad.gnu");
     system("gnuplot -persist ./plot/files/plot_invmultiquad.gnu");
-    //system("gnuplot -persist ./plot/files/plot_thinPlateSpline.gnu");
+    system("gnuplot -persist ./plot/files/plot_thinPlateSpline.gnu");
 
     return 0;
 }
