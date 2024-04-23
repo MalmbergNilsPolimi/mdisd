@@ -7,6 +7,7 @@
 
 #include "RBFunctions.hpp"
 #include "RBFinterpolator.hpp"
+#include "OLSinterpolator.hpp"
 #include "rescaling.hpp"
 
 template<typename T>
@@ -19,126 +20,128 @@ T generateRandomNumber(T min, T max) {
 
 void printTable(const Eigen::VectorXd& dimensions,
                 const Eigen::VectorXd& real_values,
-                const Eigen::VectorXd& RBF_interpolations,
-                const Eigen::VectorXd& RBF_errors,
-                const Eigen::VectorXd& RBF_mean_interpolations,
-                const Eigen::VectorXd& RBF_mean_errors,
-                const Eigen::VectorXd& RBF_minmax_interpolations,
-                const Eigen::VectorXd& RBF_minmax_errors,
-                const Eigen::VectorXd& RBF_zscore_interpolations,
-                const Eigen::VectorXd& RBF_zscore_errors) {
+                const Eigen::VectorXd& RBF_interpolations_simple,
+                const Eigen::VectorXd& RBF_errors_simple,
+                const Eigen::VectorXd& RBF_interpolations_minmax,
+                const Eigen::VectorXd& RBF_errors_minmax,
+                const Eigen::VectorXd& RBF_interpolations_mean,
+                const Eigen::VectorXd& RBF_errors_mean,
+                const Eigen::VectorXd& RBF_interpolations_zscore,
+                const Eigen::VectorXd& RBF_errors_zscore) {
     // Affichage du tableau
-    std::cout << "____________________________________________________________________________________________________________________________________________" << std::endl;
-    std::cout << std::setw(4) << std::left << "|| "
-              << std::setw(14) << std::left << "|| real value"
-              << std::setw(16) << std::left << "|| simple"
-              << std::setw(14) << std::left << "| error"
-              << std::setw(16) << std::left << "|| mean norm."
-              << std::setw(14) << std::left << "| error"
-              << std::setw(16) << std::left << "|| min-max norm."
-              << std::setw(14) << std::left << "| error"
-              << std::setw(16) << std::left << "|| z-score norm."
-              << std::setw(14) << std::left << "| error"
+    std::cout << "____________________________________________________________________________________________________________________________________________________________________________________________" << std::endl;
+    std::cout << std::setw(6) << std::left << "|| "
+              << std::setw(20) << std::left << "|| Real value"
+              << std::setw(20) << std::left << "|| no norm. interp."
+              << std::setw(20) << std::left << "| no norm. error"
+              << std::setw(20) << std::left << "|| min-max interp."
+              << std::setw(20) << std::left << "| min-max error"
+              << std::setw(20) << std::left << "|| mean interp."
+              << std::setw(20) << std::left << "| mean error"
+              << std::setw(20) << std::left << "|| z-score interp."
+              << std::setw(20) << std::left << "| z-score error"
               << "||" << std::endl;
-    std::cout << "____________________________________________________________________________________________________________________________________________" << std::endl;
+    std::cout << "____________________________________________________________________________________________________________________________________________________________________________________________" << std::endl;
     for (int i = 0; i < dimensions.size(); ++i) {
-        std::cout << "||" << std::setw(2) << std::left << dimensions(i)
-                  << "|| " << std::setw(11) << std::left << real_values(i)
-                  << "|| " << std::setw(13) << std::left << RBF_interpolations(i)
-                  << "| " << std::setw(12) << std::left << RBF_errors(i)
-                  << "|| " << std::setw(13) << std::left << RBF_mean_interpolations(i)
-                  << "| " << std::setw(12) << std::left << RBF_mean_errors(i)
-                  << "|| " << std::setw(13) << std::left << RBF_minmax_interpolations(i)
-                  << "| " << std::setw(12) << std::left << RBF_minmax_errors(i)
-                  << "|| " << std::setw(13) << std::left << RBF_zscore_interpolations(i)
-                  << "| " << std::setw(12) << std::left << RBF_zscore_errors(i)
+        std::cout << "||" << std::setw(4) << std::left << dimensions(i)
+                  << "|| " << std::setw(17) << std::left << real_values(i)
+                  << "|| " << std::setw(17) << std::left << RBF_interpolations_simple(i)
+                  << "| " << std::setw(18) << std::left << RBF_errors_simple(i)
+                  << "|| " << std::setw(17) << std::left << RBF_interpolations_minmax(i)
+                  << "| " << std::setw(18) << std::left << RBF_errors_minmax(i)
+                  << "|| " << std::setw(17) << std::left << RBF_interpolations_mean(i)
+                  << "| " << std::setw(18) << std::left << RBF_errors_mean(i)
+                  << "|| " << std::setw(17) << std::left << RBF_interpolations_zscore(i)
+                  << "| " << std::setw(18) << std::left << RBF_errors_zscore(i)
                   << "|| " << std::endl;
     }
-    std::cout << "____________________________________________________________________________________________________________________________________________" << std::endl;
+    std::cout << "____________________________________________________________________________________________________________________________________________________________________________________________" << std::endl;
 }
 
 
-void plotData(const Eigen::VectorXd& error_RBF, const Eigen::VectorXd& error_RBF_mean,
-              const Eigen::VectorXd& error_RBF_minmax, const Eigen::VectorXd& error_RBF_zscore,
-              const int num_params, const bool EXPORT) {
+void plotData(const Eigen::VectorXd& error_RBF_BR, const Eigen::VectorXd& error_RBF_AR1,
+              const Eigen::VectorXd& error_RBF_AR2, const Eigen::VectorXd& error_RBF_AR3,
+              const std::string& title, const std::string& RBF, 
+              const bool EXPORT) {
 
     std::filesystem::create_directories("./plot/");
     std::filesystem::create_directories("./plot/files/");
     std::filesystem::create_directories("./plot/figures/");
 
-    // simple RBF error
-    std::ofstream dataFileRBF("./plot/files/error_RBF.dat");
-    if (!dataFileRBF.is_open()) {
+    // RBF error BR.
+    std::ofstream dataFileRBF_BR("./plot/files/error_RBF_"+RBF+"_BR.dat");
+    if (!dataFileRBF_BR.is_open()) {
         std::cerr << "Error: Unable to open data file." << std::endl;
         return;
     }
 
-    for (int i = 0; i < error_RBF.size(); ++i) {
-        dataFileRBF << i+1 << " " << error_RBF(i) << std::endl;
+    for (int i = 0; i < error_RBF_BR.size(); ++i) {
+        dataFileRBF_BR << i+1 << " " << error_RBF_BR(i) << std::endl;
     }
-    dataFileRBF.close();
+    dataFileRBF_BR.close();
 
-    // mean normalized RBF error
-    std::ofstream dataFileRBFmean("./plot/files/error_RBF_mean.dat");
-    if (!dataFileRBFmean.is_open()) {
+    // RBF error AR1.
+    std::ofstream dataFileRBF_AR1("./plot/files/error_RBF_"+RBF+"_AR1.dat");
+    if (!dataFileRBF_AR1.is_open()) {
         std::cerr << "Error: Unable to open data file." << std::endl;
         return;
     }
 
-    for (int i = 0; i < error_RBF_mean.size(); ++i) {
-        dataFileRBFmean << i+1 << " " << error_RBF_mean(i) << std::endl;
+    for (int i = 0; i < error_RBF_AR1.size(); ++i) {
+        dataFileRBF_AR1 << i+1 << " " << error_RBF_AR1(i) << std::endl;
     }
-    dataFileRBFmean.close();
+    dataFileRBF_AR1.close();
 
-    // min-max normalized RBF error
-    std::ofstream dataFileRBFminmax("./plot/files/error_RBF_minmax.dat");
-    if (!dataFileRBFminmax.is_open()) {
+    // RBF error AR2.
+    std::ofstream dataFileRBF_AR2("./plot/files/error_RBF_"+RBF+"_AR2.dat");
+    if (!dataFileRBF_AR2.is_open()) {
         std::cerr << "Error: Unable to open data file." << std::endl;
         return;
     }
 
-    for (int i = 0; i < error_RBF_minmax.size(); ++i) {
-        dataFileRBFminmax << i+1 << " " << error_RBF_minmax(i) << std::endl;
+    for (int i = 0; i < error_RBF_AR2.size(); ++i) {
+        dataFileRBF_AR2 << i+1 << " " << error_RBF_AR2(i) << std::endl;
     }
-    dataFileRBFminmax.close();
+    dataFileRBF_AR2.close();
 
-    // z-score normalized RBF error
-    std::ofstream dataFileRBFzscore("./plot/files/error_RBF_zscore.dat");
-    if (!dataFileRBFzscore.is_open()) {
+    // RBF error AR3.
+    std::ofstream dataFileRBF_AR3("./plot/files/error_RBF_"+RBF+"_AR3.dat");
+    if (!dataFileRBF_AR3.is_open()) {
         std::cerr << "Error: Unable to open data file." << std::endl;
         return;
     }
 
-    for (int i = 0; i < error_RBF_zscore.size(); ++i) {
-        dataFileRBFzscore << i+1 << " " << error_RBF_zscore(i) << std::endl;
+    for (int i = 0; i < error_RBF_AR3.size(); ++i) {
+        dataFileRBF_AR3 << i+1 << " " << error_RBF_AR3(i) << std::endl;
     }
-    dataFileRBFzscore.close();
+    dataFileRBF_AR3.close();
 
-    std::string title{"Relative error on a "+std::to_string(num_params)+"D interpolation"};
+    //std::string title{"Relative error on a 4D interpolation"};
 
     // GNUplot commands
-    std::ofstream gnuplotScript("./plot/files/plot_script.gnu");
+    std::ofstream gnuplotScript("./plot/files/plot_script_"+RBF+".gnu");
     
     if (EXPORT)
     {
         // To export the plot in svg format
         gnuplotScript << "set terminal svg" << std::endl;
-        gnuplotScript << "set output \"" << "./plot/figures/case4_plot.svg" << "\"" << std::endl;
+        gnuplotScript << "set output \"" << "./plot/figures/case4_plot_"+RBF+".svg" << "\"" << std::endl;
     }
 
     gnuplotScript << "set title \"" << title << "\"" << std::endl;
     gnuplotScript << "set xlabel \"interpolated point number\"" << std::endl;
     gnuplotScript << "set ylabel \"relative error\"" << std::endl;
-    gnuplotScript << "set key box bottom right" << std::endl;
+    gnuplotScript << "set key box" << std::endl;
     gnuplotScript << "set style line 1 lw 2 lc rgb '#990042'" << std::endl;
     gnuplotScript << "set style line 2 lw 2 lc rgb '#31f120'" << std::endl;
     gnuplotScript << "set style line 3 lw 2 lc rgb '#0044a5'" << std::endl;
     gnuplotScript << "set style line 4 lw 2 lc rgb '#888888'" << std::endl;
-    gnuplotScript << "plot \"" << "./plot/files/error_RBF.dat" << "\" with lines linestyle 1 title \"simple RBF error\","
-                << " \"" << "./plot/files/error_RBF_mean.dat" << "\" with points pointtype 7 title \"mean norm. RBF error\","
-                << " \"" << "./plot/files/error_RBF_minmax.dat" << "\" with lines linestyle 3 title \" min-max norm. RBF error\","
-                << " \"" << "./plot/files/error_RBF_zscore.dat" << "\" with lines linestyle 4 title \"z-score norm. RBF error\""
+    gnuplotScript << "plot \"" << "./plot/files/error_RBF_"+RBF+"_BR.dat" << "\" with lines linestyle 1 title \"without rescaling\","
+                << " \"" << "./plot/files/error_RBF_"+RBF+"_AR1.dat" << "\" with lines linestyle 2 title \" Min-Max rescaling\","
+                << " \"" << "./plot/files/error_RBF_"+RBF+"_AR2.dat" << "\" with lines linestyle 3 title \"Mean rescaling\","
+                << " \"" << "./plot/files/error_RBF_"+RBF+"_AR3.dat" << "\" with lines linestyle 4 title \"Z-score rescaling\""
                 << std::endl;
+    gnuplotScript << "set key top right" << std::endl;
         
     
     if (EXPORT)
@@ -152,33 +155,25 @@ void plotData(const Eigen::VectorXd& error_RBF, const Eigen::VectorXd& error_RBF
     gnuplotScript.close();
 
     // Execute GNUplot
-    system("gnuplot -persist ./plot/files/plot_script.gnu");
+    std::string path{"gnuplot -persist ./plot/files/plot_script_"+RBF+".gnu"};
+    system(path.c_str());
 }
+
+
 
 
 int main() {
 
     ////////////////////////////////////////////////
-    //////// TEST : Using random sampling //////////
+    /////////// SAMPLING OF THE POINTS /////////////
     ////////////////////////////////////////////////
 
     // Function that return many sets of parameters.
-    auto fillParameters = [](int num_sets, int num_params, double inf, double sup) {
+    auto fillParameters = [](int num_sets, int num_params, Eigen::VectorXd tab_inf, Eigen::VectorXd tab_sup) {
         Eigen::MatrixXd parameters(num_sets, num_params);
         for (size_t i = 0; i < num_sets; ++i) {
             for (size_t j = 0; j < num_params; ++j) {
-                
-                double a{generateRandomNumber(inf , sup)};
-                double b{generateRandomNumber(inf , sup)};
-
-                if (a > b)
-                {
-                    double tmp = a;
-                    a = b;
-                    b = tmp;
-                }
-                
-                parameters(i, j) = generateRandomNumber(a, b);
+                parameters(i, j) = generateRandomNumber(tab_inf(j), tab_sup(j));
             }
         }
         return parameters;
@@ -186,22 +181,34 @@ int main() {
 
     // Definition of the function to interpolate (THE USER CAN CHANGE HERE THE FUNCTION)
     auto funToInterpolate = [](const Eigen::VectorXd& params) {
-        double res = 0;
-        for (int i = 0; i < params.size(); ++i) {
-            res += params(i)*exp(params(i)/2.);
+        double res{};
+
+        if (params.size()==4)
+        {
+            res = (3./2)*params(0)*params(0)*cos(params(1)*M_PI)*sin(params(3)-params(2)) - params(3)*exp(-(params(0)+params(2)/2.)) + log(5*abs(params(2))) - 18.12*std::pow(abs(params(1)), params(3));
+        } else {
+            for (int i = 0; i < params.size(); ++i) {
+                res += params(i)*exp(params(i)/2.);
+            }
         }
         return res;
     };
 
 
     // Dimensions of the problem
-    size_t num_params{10};       // number of parameters taken by the function
+    size_t num_params{4};       // number of parameters taken by the function
     size_t num_measures{150};   // number of known points
-    size_t num_points{30};       // number of points to interpolate
+    size_t num_points{10};      // number of points to interpolate
     
     // [inf, sup] is the interval of definition of the parameter
-    double inf{-5.};
-    double sup{5.};
+    Eigen::VectorXd tab_inf(num_params);
+    tab_inf << 0. , -5. , 100. , 0.9; 
+    Eigen::VectorXd tab_sup(num_params);
+    tab_inf << 10. , -2. , 1000. , 1.2; 
+    // Eigen::VectorXd tab_inf(num_params);
+    // tab_inf << 0. , 0. , 0. , 0.; 
+    // Eigen::VectorXd tab_sup(num_params);
+    // tab_inf << 1. , 1. , 1. , 1.; 
 
     // Declaration of the known parameters, known measurements and set of parameters used for the interpolation
     Eigen::MatrixXd parameters(num_measures, num_params);
@@ -209,7 +216,7 @@ int main() {
     Eigen::MatrixXd parametersFORinterp(num_points, num_params);
 
     // Creation of a random matrix containing the parameters for each measurement    
-    parameters = fillParameters(num_measures, num_params, inf, sup);
+    parameters = fillParameters(num_measures, num_params, tab_inf, tab_sup);
 
     // Creation of the measurements 
     for (size_t i = 0; i < num_measures; i++)
@@ -218,55 +225,149 @@ int main() {
     }
 
     // Creation of the parameters for which the user want the estimated output
-    parametersFORinterp = fillParameters(num_points, num_params, inf, sup);
+    parametersFORinterp = fillParameters(num_points, num_params, tab_inf, tab_sup);
 
-
-    // Use of RBF interpolation method without rescaling
-    double scale_factor{3};   // (THE USER CAN CHANGER HERE THE VALUE OF THE SCALE FACTOR)
-    RBFInterpolator interpolatorRBF(&RBFunctions::gaussian, scale_factor); // (THE USER CAN CHANGE HERE THE USED RBFUNCTION)
-    Eigen::VectorXd RBF_points_interpolated = interpolatorRBF.interpolate(parametersFORinterp, parameters, measurements);
-
-    //  Use of RBF interpolation method with mean normalization
-    RBFInterpolator interpolatorRBFmean(&RBFunctions::gaussian, scale_factor);
-    Rescaling rescaling_mean;
-    auto normalizedData_mean = rescaling_mean.meanNormalization(parameters, &parametersFORinterp);
-    Eigen::VectorXd RBF_points_interpolated_mean = interpolatorRBFmean.interpolate(normalizedData_mean.second, normalizedData_mean.first, measurements);
-
-    //  Use of RBF interpolation method with min-max normalization
-    RBFInterpolator interpolatorRBFminmax(&RBFunctions::gaussian, scale_factor);
-    Rescaling rescaling_minmax;
-    auto normalizedData_minmax = rescaling_minmax.minMaxNormalization(parameters, &parametersFORinterp);
-    Eigen::VectorXd RBF_points_interpolated_minmax = interpolatorRBFminmax.interpolate(normalizedData_minmax.second, normalizedData_minmax.first, measurements);
-
-    //  Use of RBF interpolation method with z-score normalization
-    RBFInterpolator interpolatorRBFzscore(&RBFunctions::gaussian, scale_factor);
-    Rescaling rescaling_zscore;
-    auto normalizedData_zscore = rescaling_zscore.zScoreNormalization(parameters, &parametersFORinterp);
-    Eigen::VectorXd RBF_points_interpolated_zscore = interpolatorRBFzscore.interpolate(normalizedData_zscore.second, normalizedData_zscore.first, measurements);
-
-
-
-    // Computing of the real values
     Eigen::VectorXd points_real(num_points);
+    // Computing of the real values
     for (size_t i = 0; i < num_points; ++i)
     {
         points_real(i) = funToInterpolate(parametersFORinterp.row(i));
     }
 
+    ////////////////////////////////////////////////
+    //////////// BR : BEFORE RESCALING /////////////
+    ////////////////////////////////////////////////
 
-    //////////////////////////////////////////////////
-    ////////// PRINT OF RBF AND OLS RESULTS //////////
-    //////////////////////////////////////////////////
+    // Use of RBF interpolation method
+    double scale_factor{0.5};
+    RBFInterpolator interpolatorRBF(&RBFunctions::gaussian, scale_factor);
+    Eigen::VectorXd RBF_points_interpolated_BR = interpolatorRBF.interpolate(parametersFORinterp, parameters, measurements);
 
-    Eigen::VectorXd RBF_relative_errors = ((RBF_points_interpolated - points_real).array() / points_real.array().abs());
-    Eigen::VectorXd RBF_relative_errors_mean = ((RBF_points_interpolated_mean - points_real).array() / points_real.array().abs());
-    Eigen::VectorXd RBF_relative_errors_minmax = ((RBF_points_interpolated_minmax - points_real).array() / points_real.array().abs());
-    Eigen::VectorXd RBF_relative_errors_zscore = ((RBF_points_interpolated_zscore - points_real).array() / points_real.array().abs());
+    // Use of normalized RBF interpolation method
+    bool normalize{true};
+    RBFInterpolator interpolatorRBFnorm(&RBFunctions::gaussian, scale_factor, normalize);
+    Eigen::VectorXd RBF_norm_points_interpolated_BR = interpolatorRBFnorm.interpolate(parametersFORinterp, parameters, measurements);
+
+    // Use of RBF augmented with polynomial
+    normalize=false;
+    bool polynomial{true};
+    RBFInterpolator interpolatorRBFpoly(&RBFunctions::gaussian, scale_factor, normalize, polynomial);
+    Eigen::VectorXd RBF_poly_points_interpolated_BR = interpolatorRBFpoly.interpolate(parametersFORinterp, parameters, measurements);
+
+    // Use of OLS approximation method
+    OLSInterpolator interpolatorOLS;
+    Eigen::VectorXd OLS_points_interpolated_BR = interpolatorOLS.interpolate(parametersFORinterp, parameters, measurements);
+
+
+    Eigen::VectorXd RBF_relative_errors_BR = ((RBF_points_interpolated_BR - points_real).array() / points_real.array().abs());
+    Eigen::VectorXd RBF_norm_relative_errors_BR = ((RBF_norm_points_interpolated_BR - points_real).array() / points_real.array().abs());
+    Eigen::VectorXd RBF_poly_relative_errors_BR = ((RBF_poly_points_interpolated_BR - points_real).array() / points_real.array().abs());
+    Eigen::VectorXd OLS_relative_errors_BR = ((OLS_points_interpolated_BR - points_real).array() / points_real.array().abs());
+
+
+
+    ////////////////////////////////////////////////
+    //////// AR1 : AFTER MIN-MAX RESCALING /////////
+    ////////////////////////////////////////////////
+
+    Rescaling rescaling_minmax;
+    auto normalizedData_minmax = rescaling_minmax.minMaxNormalization(parameters, &parametersFORinterp);
+
+    Eigen::VectorXd RBF_points_interpolated_AR1 = interpolatorRBF.interpolate(normalizedData_minmax.second, normalizedData_minmax.first, measurements);
+    Eigen::VectorXd RBF_norm_points_interpolated_AR1 = interpolatorRBFnorm.interpolate(normalizedData_minmax.second, normalizedData_minmax.first, measurements);
+    Eigen::VectorXd RBF_poly_points_interpolated_AR1 = interpolatorRBFpoly.interpolate(normalizedData_minmax.second, normalizedData_minmax.first, measurements);
+    Eigen::VectorXd OLS_points_interpolated_AR1 = interpolatorOLS.interpolate(normalizedData_minmax.second, normalizedData_minmax.first, measurements);
+
+
+    Eigen::VectorXd RBF_relative_errors_AR1 = ((RBF_points_interpolated_AR1 - points_real).array() / points_real.array().abs());
+    Eigen::VectorXd RBF_norm_relative_errors_AR1 = ((RBF_norm_points_interpolated_AR1 - points_real).array() / points_real.array().abs());
+    Eigen::VectorXd RBF_poly_relative_errors_AR1 = ((RBF_poly_points_interpolated_AR1 - points_real).array() / points_real.array().abs());
+    Eigen::VectorXd OLS_relative_errors_AR1 = ((OLS_points_interpolated_AR1 - points_real).array() / points_real.array().abs());
+
+    ////////////////////////////////////////////////
+    ////////// AR2 : AFTER MEAN RESCALING //////////
+    ////////////////////////////////////////////////
+
+    //  Use of RBF interpolation method with mean normalization
+    Rescaling rescaling_mean;
+    auto normalizedData_mean = rescaling_mean.meanNormalization(parameters, &parametersFORinterp);
+
+    Eigen::VectorXd RBF_points_interpolated_AR2 = interpolatorRBF.interpolate(normalizedData_mean.second, normalizedData_mean.first, measurements);
+    Eigen::VectorXd RBF_norm_points_interpolated_AR2 = interpolatorRBFnorm.interpolate(normalizedData_mean.second, normalizedData_mean.first, measurements);
+    Eigen::VectorXd RBF_poly_points_interpolated_AR2 = interpolatorRBFpoly.interpolate(normalizedData_mean.second, normalizedData_mean.first, measurements);
+    Eigen::VectorXd OLS_points_interpolated_AR2 = interpolatorOLS.interpolate(normalizedData_mean.second, normalizedData_mean.first, measurements);
+
+
+    Eigen::VectorXd RBF_relative_errors_AR2 = ((RBF_points_interpolated_AR2 - points_real).array() / points_real.array().abs());
+    Eigen::VectorXd RBF_norm_relative_errors_AR2 = ((RBF_norm_points_interpolated_AR2 - points_real).array() / points_real.array().abs());
+    Eigen::VectorXd RBF_poly_relative_errors_AR2 = ((RBF_poly_points_interpolated_AR2 - points_real).array() / points_real.array().abs());
+    Eigen::VectorXd OLS_relative_errors_AR2 = ((OLS_points_interpolated_AR2 - points_real).array() / points_real.array().abs());
+
+    ////////////////////////////////////////////////
+    ///////// AR3 : AFTER Z-SCORE RESCALING ////////
+    ////////////////////////////////////////////////
+
+    //  Use of RBF interpolation method with mean normalization
+    Rescaling rescaling_zscore;
+    auto normalizedData_zscore = rescaling_zscore.zScoreNormalization(parameters, &parametersFORinterp);
+
+    Eigen::VectorXd RBF_points_interpolated_AR3 = interpolatorRBF.interpolate(normalizedData_zscore.second, normalizedData_zscore.first, measurements);
+    Eigen::VectorXd RBF_norm_points_interpolated_AR3 = interpolatorRBFnorm.interpolate(normalizedData_zscore.second, normalizedData_zscore.first, measurements);
+    Eigen::VectorXd RBF_poly_points_interpolated_AR3 = interpolatorRBFpoly.interpolate(normalizedData_zscore.second, normalizedData_zscore.first, measurements);
+    Eigen::VectorXd OLS_points_interpolated_AR3 = interpolatorOLS.interpolate(normalizedData_zscore.second, normalizedData_zscore.first, measurements);
+
+
+    Eigen::VectorXd RBF_relative_errors_AR3 = ((RBF_points_interpolated_AR3 - points_real).array() / points_real.array().abs());
+    Eigen::VectorXd RBF_norm_relative_errors_AR3 = ((RBF_norm_points_interpolated_AR3 - points_real).array() / points_real.array().abs());
+    Eigen::VectorXd RBF_poly_relative_errors_AR3 = ((RBF_poly_points_interpolated_AR3 - points_real).array() / points_real.array().abs());
+    Eigen::VectorXd OLS_relative_errors_AR3 = ((OLS_points_interpolated_AR3 - points_real).array() / points_real.array().abs());
+
+
+
+
+    ////////////////////////////////////////////////
+    ///////// PRINT AND PLOT OF THE RESULTS ////////
+    ////////////////////////////////////////////////
 
     Eigen::VectorXd points = Eigen::VectorXd::LinSpaced(num_points, 1, num_points);
-    printTable(points, points_real, RBF_points_interpolated, RBF_relative_errors, RBF_points_interpolated_mean, RBF_relative_errors_mean, RBF_points_interpolated_minmax, RBF_relative_errors_minmax, RBF_points_interpolated_zscore, RBF_relative_errors_zscore);
     
+    bool PLOT{true};
     bool EXPORT{true};
-    plotData(RBF_relative_errors, RBF_relative_errors_mean, RBF_relative_errors_minmax, RBF_relative_errors_zscore, num_params, EXPORT);
+
+    std::cout << "\n-----------------------------------------------------------------------------------------SIMPLE RBF-----------------------------------------------------------------------------------------" << std::endl;
+
+    printTable(points, points_real, RBF_points_interpolated_BR, RBF_relative_errors_BR, RBF_points_interpolated_AR1, RBF_relative_errors_AR1, RBF_points_interpolated_AR2, RBF_relative_errors_AR2, RBF_points_interpolated_AR3, RBF_relative_errors_AR3);
+    std::string title{"Relative error on a 4D interpolation with the RBF method"};
+    std::string RBF{"simple"};
+    
+    if (PLOT)
+    {
+        plotData(RBF_relative_errors_BR, RBF_relative_errors_AR1, RBF_relative_errors_AR2, RBF_relative_errors_AR3, title, RBF, EXPORT);
+    }
+
+    std::cout << "\n---------------------------------------------------------------------------------------NORMALIZED RBF---------------------------------------------------------------------------------------" << std::endl;
+
+    printTable(points, points_real, RBF_norm_points_interpolated_BR, RBF_norm_relative_errors_BR, RBF_norm_points_interpolated_AR1, RBF_norm_relative_errors_AR1, RBF_norm_points_interpolated_AR2, RBF_norm_relative_errors_AR2, RBF_norm_points_interpolated_AR3, RBF_norm_relative_errors_AR3);
+    title = "Relative error on a 4D interpolation with the NRBF method";
+    RBF = "norm";
+    
+    if (PLOT)
+    {
+        plotData(RBF_norm_relative_errors_BR, RBF_norm_relative_errors_AR1, RBF_norm_relative_errors_AR2, RBF_norm_relative_errors_AR3, title, RBF, EXPORT);
+    }
+
+
+
+    std::cout << "\n-------------------------------------------------------------------------------------RBF WITH POLYNOMIAL------------------------------------------------------------------------------------" << std::endl;
+
+    printTable(points, points_real, RBF_poly_points_interpolated_BR, RBF_poly_relative_errors_BR, RBF_poly_points_interpolated_AR1, RBF_poly_relative_errors_AR1, RBF_poly_points_interpolated_AR2, RBF_poly_relative_errors_AR2, RBF_poly_points_interpolated_AR3, RBF_poly_relative_errors_AR3);
+    title = "Relative error on a 4D interpolation with the RBFP method";
+    RBF = "poly";
+
+    if (PLOT)
+    {
+        plotData(RBF_poly_relative_errors_BR, RBF_poly_relative_errors_AR1, RBF_poly_relative_errors_AR2, RBF_poly_relative_errors_AR3, title, RBF, EXPORT);
+    }
+
     return 0;
 }
