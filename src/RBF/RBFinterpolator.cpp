@@ -1,3 +1,4 @@
+#include <iostream>
 #include "RBFinterpolator.hpp"
 #include "RBFunctions.hpp"
 
@@ -45,6 +46,11 @@ Eigen::VectorXd RBFInterpolator::interpolate(const Eigen::MatrixXd& parametersFO
     
     if (normalizeRBF)
     {
+        if (polynomialRBF)
+        {
+            std::cerr << "Error: can't use normalized RBF method with polynomial addition simultaneously, as normalization only affects radial basis functions and not polynomials." << std::endl;
+        }
+        
         Eigen::VectorXd NEWmeasurements = Eigen::VectorXd::Zero(num_measures);
         for (size_t i = 0; i < num_measures; ++i)
         {
