@@ -136,8 +136,8 @@ void plotData(const Eigen::VectorXd& error_RBF, const Eigen::VectorXd& error_NRB
     gnuplotScript << "set style line 4 lw 2 lc rgb '#888888'" << std::endl;
     gnuplotScript << "plot \"" << "./plot/files/error_RBF.dat" << "\" with lines linestyle 1 title \"RBF error\","
                 << " \"" << "./plot/files/error_NRBF.dat" << "\" with lines linestyle 2 title \"NRBF error\","
-                << " \"" << "./plot/files/error_RBFP.dat" << "\" with lines linestyle 3 title \"RBFP error\","
-                << " \"" << "./plot/files/error_OLS.dat" << "\" with lines linestyle 4 title \"OLS error\""
+                << " \"" << "./plot/files/error_RBFP.dat" << "\" with lines linestyle 3 title \"RBFP error\""
+                //<< " \"" << "./plot/files/error_OLS.dat" << "\" with lines linestyle 4 title \"OLS error\""
                 << std::endl;
     gnuplotScript << "set key top right" << std::endl;
         
@@ -164,22 +164,11 @@ int main() {
     ////////////////////////////////////////////////
 
     // Function that return many sets of parameters.
-    auto fillParameters = [](int num_sets, int num_params, double inf, double sup) {
+    auto fillParameters = [](int num_sets, int num_params, Eigen::VectorXd tab_inf, Eigen::VectorXd tab_sup) {
         Eigen::MatrixXd parameters(num_sets, num_params);
         for (size_t i = 0; i < num_sets; ++i) {
             for (size_t j = 0; j < num_params; ++j) {
-                
-                double a{generateRandomNumber(inf , sup)};
-                double b{generateRandomNumber(inf , sup)};
-
-                if (a > b)
-                {
-                    double tmp = a;
-                    a = b;
-                    b = tmp;
-                }
-                
-                parameters(i, j) = generateRandomNumber(a, b);
+                parameters(i, j) = generateRandomNumber(tab_inf(j), tab_sup(j));
             }
         }
         return parameters;
@@ -187,9 +176,15 @@ int main() {
 
     // Definition of the function to interpolate (THE USER CAN CHANGE HERE THE FUNCTION)
     auto funToInterpolate = [](const Eigen::VectorXd& params) {
-        double res = 0;
-        for (int i = 0; i < params.size(); ++i) {
-            res += params(i)*exp(params(i)/2.);
+        double res{};
+
+        if (params.size()==4)
+        {
+            res = (3./2)*params(0)*params(0)*cos(params(1)*M_PI)*sin(params(3)-params(2)) - params(3)*exp(-(params(0)+params(2)/2.)) + log(5*abs(params(2))) - 18.12*std::pow(abs(params(1)), params(3));
+        } else {
+            for (int i = 0; i < params.size(); ++i) {
+                res += params(i)*exp(params(i)/2.);
+            }
         }
         return res;
     };
@@ -197,12 +192,14 @@ int main() {
 
     // Dimensions of the problem
     size_t num_params{4};       // number of parameters taken by the function
-    size_t num_measures{100};   // number of known points
-    size_t num_points{10};       // number of points to interpolate
+    size_t num_measures{150};   // number of known points
+    size_t num_points{10};      // number of points to interpolate
     
     // [inf, sup] is the interval of definition of the parameter
-    double inf{0.};
-    double sup{1.};
+    Eigen::VectorXd tab_inf(num_params);
+    tab_inf << 0. , 0. , 0. , 0.; 
+    Eigen::VectorXd tab_sup(num_params);
+    tab_inf << 1. , 1. , 1. , 1.; 
 
     // Declaration of the known parameters, known measurements and set of parameters used for the interpolation
     Eigen::MatrixXd parameters(num_measures, num_params);
@@ -210,7 +207,7 @@ int main() {
     Eigen::MatrixXd parametersFORinterp(num_points, num_params);
 
     // Creation of a random matrix containing the parameters for each measurement    
-    parameters = fillParameters(num_measures, num_params, inf, sup);
+    parameters = fillParameters(num_measures, num_params, tab_inf, tab_sup);
 
     // Creation of the measurements 
     for (size_t i = 0; i < num_measures; i++)
@@ -219,23 +216,23 @@ int main() {
     }
 
     // Creation of the parameters for which the user want the estimated output
-    parametersFORinterp = fillParameters(num_points, num_params, inf, sup);
+    parametersFORinterp = fillParameters(num_points, num_params, tab_inf, tab_sup);
 
 
     // Use of RBF interpolation method
     double scale_factor{0.5};   // (THE USER CAN CHANGER HERE THE VALUE OF THE SCALE FACTOR)
-    RBFInterpolator interpolatorRBF(&RBFunctions::multiquadratic, scale_factor); // (THE USER CAN CHANGE HERE THE USED RBFUNCTION)
+    RBFInterpolator interpolatorRBF(&RBFunctions::gaussian, scale_factor); // (THE USER CAN CHANGE HERE THE USED RBFUNCTION)
     Eigen::VectorXd RBF_points_interpolated = interpolatorRBF.interpolate(parametersFORinterp, parameters, measurements);
 
     // Use of normalized RBF interpolation method
     bool normalize{true};
-    RBFInterpolator interpolatorRBFnorm(&RBFunctions::multiquadratic, scale_factor, normalize);
+    RBFInterpolator interpolatorRBFnorm(&RBFunctions::gaussian, scale_factor, normalize);
     Eigen::VectorXd RBF_norm_points_interpolated = interpolatorRBFnorm.interpolate(parametersFORinterp, parameters, measurements);
 
     // Use of RBF augmented with polynomial
     normalize=false;
     bool polynomial{true};
-    RBFInterpolator interpolatorRBFpoly(&RBFunctions::multiquadratic, scale_factor, normalize, polynomial);
+    RBFInterpolator interpolatorRBFpoly(&RBFunctions::gaussian, scale_factor, normalize, polynomial);
     Eigen::VectorXd RBF_poly_points_interpolated = interpolatorRBFpoly.interpolate(parametersFORinterp, parameters, measurements);
 
     // Use of OLS approximation method
