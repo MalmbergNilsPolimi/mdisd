@@ -24,8 +24,6 @@ int main() {
     Eigen::MatrixXd inverseMultiquadratic_mat(scale_factor.size(), tab_x.size());
     Eigen::MatrixXd thinPlateSpline_mat(scale_factor.size(), tab_x.size());
 
-    std::cout << tab_x.size() << "\t" << scale_factor.size() << std::endl;
-
     for (size_t i = 0; i < scale_factor.size(); ++i)
     {
         for (size_t j = 0; j < tab_x.size(); ++j)
@@ -250,7 +248,6 @@ int main() {
         gnuplotScriptthinPlateSpline << "'./plot/files/data_thinPlateSpline.dat' index " << i << " using 1:2:3 with lines title sprintf('r_0 = %.2f', " << scale_factor(i) << ")";
     }
     gnuplotScriptthinPlateSpline << std::endl;
-    //gnuplotScriptthinPlateSpline << "set key top left" << std::endl;
 
     if (EXPORT)
     {   
