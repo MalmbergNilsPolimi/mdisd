@@ -38,6 +38,12 @@ $(OBJ_DIR)/RBFunctions.o: $(RBF_FUNCTIONS_SRC)
 	@g++ -o $@ -c $< -I$(INCLUDE_DIR_GENERAL) -I$(INCLUDE_DIR_RBF) -I$(INCLUDE_DIR_EIGEN)
 	@echo "Done."
 
+
+# run
+run:
+	@./bin/prog
+
+
 # Clean
 clean:
 	@echo "Cleaning..."
