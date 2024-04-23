@@ -59,8 +59,8 @@ void printTable(const Eigen::VectorXd& dimensions,
 
 
 void plotData(const Eigen::VectorXd& error_RBF, const Eigen::VectorXd& error_RBF_mean,
-              const Eigen::VectorXd& error_RBF_minmax, const Eigen::VectorXd& error_RBF_zscore, 
-              const bool EXPORT) {
+              const Eigen::VectorXd& error_RBF_minmax, const Eigen::VectorXd& error_RBF_zscore,
+              const int num_params, const bool EXPORT) {
 
     std::filesystem::create_directories("./plot/");
     std::filesystem::create_directories("./plot/files/");
@@ -114,7 +114,7 @@ void plotData(const Eigen::VectorXd& error_RBF, const Eigen::VectorXd& error_RBF
     }
     dataFileRBFzscore.close();
 
-    std::string title{"Relative error on a 4D interpolation"};
+    std::string title{"Relative error on a "+std::to_string(num_params)+"D interpolation"};
 
     // GNUplot commands
     std::ofstream gnuplotScript("./plot/files/plot_script.gnu");
@@ -267,6 +267,6 @@ int main() {
     printTable(points, points_real, RBF_points_interpolated, RBF_relative_errors, RBF_points_interpolated_mean, RBF_relative_errors_mean, RBF_points_interpolated_minmax, RBF_relative_errors_minmax, RBF_points_interpolated_zscore, RBF_relative_errors_zscore);
     
     bool EXPORT{true};
-    plotData(RBF_relative_errors, RBF_relative_errors_mean, RBF_relative_errors_minmax, RBF_relative_errors_zscore, EXPORT);
+    plotData(RBF_relative_errors, RBF_relative_errors_mean, RBF_relative_errors_minmax, RBF_relative_errors_zscore, num_params, EXPORT);
     return 0;
 }
