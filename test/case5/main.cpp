@@ -10,10 +10,10 @@
 #include "RBFinterpolator.hpp"
 
 template<typename T>
-T generateRandomNumber(T min, T max) {
+T generateRandomNumber(T mean, T std) {
     std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_real_distribution<T> dis(min, max);
+    std::mt19937 gen(rd());;
+    std::normal_distribution<T> dis(mean, std);
     return dis(gen);
 }
 
@@ -39,7 +39,8 @@ void plotData(const Eigen::VectorXi& DIMENSIONS, const Eigen::VectorXi& KNOWN_PO
         dataFile.close();
     }
 
-    std::string title{"Convergence of the RBF "+error+" for different dimensions"};
+    std::string title{"Convergence of the RBF "+error+" error for different dimensions"};
+    std::string label_y{error+" error on interpolated points"};
 
     std::ofstream gnuplotScript("./plot/files/plot_script.gnu");
 
@@ -52,7 +53,7 @@ void plotData(const Eigen::VectorXi& DIMENSIONS, const Eigen::VectorXi& KNOWN_PO
 
     gnuplotScript << "set title \"" << title << "\"" << std::endl;
     gnuplotScript << "set xlabel \"number of known points\"" << std::endl;
-    gnuplotScript << "set ylabel \"Mean Squared Error on the interpolated points\"" << std::endl;
+    gnuplotScript << "set ylabel \"" << label_y << "\"" << std::endl;
     gnuplotScript << "set key box" << std::endl;
     
     gnuplotScript << "plot ";
@@ -89,11 +90,11 @@ int main() {
     ////////////////////////////////////////////////
 
     // Function that return many sets of parameters.
-    auto fillParameters = [](int num_sets, int num_params, double inf, double sup) {
+    auto fillParameters = [](int num_sets, int num_params, double mean, double std) {
         Eigen::MatrixXd parameters(num_sets, num_params);
         for (size_t i = 0; i < num_sets; ++i) {
             for (size_t j = 0; j < num_params; ++j) {
-                parameters(i, j) = generateRandomNumber(inf, sup);
+                parameters(i, j) = generateRandomNumber(mean, std);
             }
         }
         return parameters;
@@ -101,55 +102,44 @@ int main() {
 
     // Definition of the function to interpolate (THE USER CAN CHANGE HERE THE FUNCTION)
     auto funToInterpolate = [](const Eigen::VectorXd& params, const Eigen::MatrixXd& coeff) {
-        double res{1.};
-        double inf{-10.};
-        double sup{10.};
+        double res{};
 
-        for (size_t i = 0; i < params.size()-1; ++i)
+        for (size_t i = 0; i < params.size(); ++i)
         {
-            //res += params(i) * params(i) * params(i) * exp(-params(i+1)/2);
-            res += coeff(0,i)*params(i)*cos(coeff(1,i)*M_PI*params(i+1));
+            res += params(i);
         }
         return res;
     };
 
-
-    // Eigen::VectorXi DIMENSIONS(3);
-    // DIMENSIONS << 2, 4, 6;
-
     Eigen::VectorXi DIMENSIONS(6);
     DIMENSIONS << 1, 2, 4, 6, 8, 10;
 
-    Eigen::VectorXi KNOWN_POINTS(9);
-    KNOWN_POINTS << 10, 50, 100, 150, 200, 250, 300, 350, 400;
-
-    // Eigen::VectorXi KNOWN_POINTS(13);
-    // KNOWN_POINTS << 100, 150, 200, 250, 300, 350, 400, 500, 600, 700, 800, 900, 1000;
+    Eigen::VectorXi KNOWN_POINTS(14);
+    KNOWN_POINTS << 100, 150, 200, 250, 300, 350, 400, 500, 600, 700, 800, 900, 1000, 2000;
 
     size_t num_points{50};       // number of points to interpolate
 
     Eigen::MatrixXd MSE(DIMENSIONS.size(), KNOWN_POINTS.size());
     MSE.setZero();
-    Eigen::MatrixXd MSE2(DIMENSIONS.size(), KNOWN_POINTS.size());
-    MSE2.setZero();
-    Eigen::MatrixXd MSE3(DIMENSIONS.size(), KNOWN_POINTS.size());
-    MSE3.setZero();
-    Eigen::MatrixXd MSE4(DIMENSIONS.size(), KNOWN_POINTS.size());
-    MSE4.setZero();
+    Eigen::MatrixXd MAD(DIMENSIONS.size(), KNOWN_POINTS.size());
+    MAD.setZero();
+    Eigen::MatrixXd RMSE(DIMENSIONS.size(), KNOWN_POINTS.size());
+    RMSE.setZero();
+    Eigen::MatrixXd ME(DIMENSIONS.size(), KNOWN_POINTS.size());
+    ME.setZero();
 
-    double scale_factor{0.5};
-    RBFInterpolator interpolatorRBF(&RBFunctions::gaussian, scale_factor);
-
+    double meanGauss{};
+    double stdGauss{1};
 
     Eigen::MatrixXd parameters(KNOWN_POINTS(KNOWN_POINTS.size()-1), DIMENSIONS(DIMENSIONS.size()-1));
     Eigen::MatrixXd parametersFORinterp(num_points, DIMENSIONS(DIMENSIONS.size()-1));
 
-    double inf{0.};
-    double sup{1.};
     // Creation of the parameters for which the user want the estimated output
-    parametersFORinterp = fillParameters(num_points, DIMENSIONS(DIMENSIONS.size()-1), inf, sup);
+    parametersFORinterp = fillParameters(num_points, DIMENSIONS(DIMENSIONS.size()-1), meanGauss, stdGauss);
+    parameters = fillParameters(KNOWN_POINTS(KNOWN_POINTS.size()-1), DIMENSIONS(DIMENSIONS.size()-1), meanGauss, stdGauss);
 
-    Eigen::MatrixXd coeff_fun = Eigen::MatrixXd::Random(2, DIMENSIONS(DIMENSIONS.size()-1) - 1);
+    Eigen::MatrixXd coeff_fun = Eigen::MatrixXd::Random(2, DIMENSIONS(DIMENSIONS.size()-1));
+    coeff_fun = (coeff_fun.array() + 1.0) * 5.0;
 
 
     for (size_t i = 0; i < DIMENSIONS.size(); ++i)
@@ -161,12 +151,18 @@ int main() {
             size_t num_measures{static_cast<size_t>(KNOWN_POINTS(j))};
 
             Eigen::VectorXd measurements(num_measures);
-            for (size_t i = 0; i < num_measures; ++i)
+            for (size_t m = 0; m < num_measures; ++m)
             {
-                measurements(i) = funToInterpolate((parameters.block(0, 0, num_measures, num_params)).row(i), coeff_fun);
+                measurements(m) = funToInterpolate((parameters.block(0, 0, num_measures, num_params)).row(m), coeff_fun);
             }
 
+            double scale_factor{sqrt(num_params)/10};
+            RBFInterpolator interpolatorRBF(&RBFunctions::gaussian, scale_factor);
+
             Eigen::VectorXd RBF_points_interpolated = interpolatorRBF.interpolate(parametersFORinterp.block(0, 0, num_points, num_params), parameters.block(0, 0, num_measures, num_params), measurements);
+
+
+            Eigen::VectorXd tmp = RBF_points_interpolated;
 
             Eigen::VectorXd points_real(num_points);
             for (size_t k = 0; k < num_points; ++k)
@@ -176,14 +172,14 @@ int main() {
 
             for (size_t l = 0; l < points_real.size(); ++l)
             {
-                MSE(i,j) += (points_real(l) - RBF_points_interpolated(l))*(points_real(l) - RBF_points_interpolated(l)) / num_points;
-                MSE2(i,j) += abs(points_real(l) - RBF_points_interpolated(l)) / num_points;
-                MSE4(i,j) += (points_real(l) - RBF_points_interpolated(l)) / num_points;
+                MSE(i,j) += (points_real(l) - RBF_points_interpolated(l))*(points_real(l) - RBF_points_interpolated(l));
+                MAD(i,j) += abs(points_real(l) - RBF_points_interpolated(l));
+                ME(i,j) += points_real(l) - RBF_points_interpolated(l);
             }
-            MSE3(i,j) = sqrt(MSE(i,j));
-            
-            //MSE(i,j) = (points_real - RBF_points_interpolated).array().pow(2).sum() / num_points;
-            //MSE(i,j) = ((RBF_points_interpolated - points_real).array() / points_real.array().abs()).mean();
+            MSE(i,j) /= num_points;
+            MAD(i,j) /= num_points;
+            RMSE(i,j) = sqrt(MSE(i,j));
+            ME(i,j) /= num_points;
         }
         
     }
@@ -209,13 +205,13 @@ int main() {
     plotData(DIMENSIONS, KNOWN_POINTS, MSE, error, EXPORT);
 
     error = "MAD";
-    plotData(DIMENSIONS, KNOWN_POINTS, MSE2, error, EXPORT);
+    plotData(DIMENSIONS, KNOWN_POINTS, MAD, error, EXPORT);
 
     error = "RMSE";
-    plotData(DIMENSIONS, KNOWN_POINTS, MSE3, error, EXPORT);
+    plotData(DIMENSIONS, KNOWN_POINTS, RMSE, error, EXPORT);
 
     error = "MEAN";
-    plotData(DIMENSIONS, KNOWN_POINTS, MSE4, error, EXPORT);
+    plotData(DIMENSIONS, KNOWN_POINTS, ME, error, EXPORT);
     
     return 0;
 }
