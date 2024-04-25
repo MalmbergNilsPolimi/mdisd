@@ -41,9 +41,11 @@ The mdisd C++ library is dedicated to the interpolation of scattered data with o
 - Offers the possibility to add a linear polynomial to RBF interpolation.
 - Offers pre-processing options (data rescaling and normalization).
 - Efficient computation using <a href="https://eigen.tuxfamily.org/" target="_blank">Eigen</a> library for linear algebra.
-- Use of the library in Python possible thanks to bindings made with <a href="https://github.com/pybind/pybind11" target="_blank">pybind11<\a> (IN COMING).
+- Use of the library in Python possible thanks to bindings made with <a href="https://github.com/pybind/pybind11" target="_blank">pybind11</a> (IN COMING).
 
 ## How to test the library
+
+Before testing the library, make sure you have Eigen3 installed and modify in each Makefile (of each test case that you want to use) the path to the library.
 
 The library presents 6 test cases numbered from 0 to 5 which can be launched by executing the following commands (example for the test case number 0):
 
@@ -55,7 +57,7 @@ make
 make run
 ```
 
-For more information on the various test cases implemented, you can consult the commented code directly or consult the section dedicated to tests in the mdisdReport.pdf report located in the doc directory.
+For more information on the various test cases implemented, you can consult the commented <a href="https://github.com/MalmbergNilsPolimi/mdisd/tree/main/test" target="_blank">code</a> directly or consult the section dedicated to tests in the <a href="https://github.com/MalmbergNilsPolimi/mdisd/blob/main/doc/mdisdReport.pdf" target="_blank">mdisdReport.pdf</a> report located in the <a href="https://github.com/MalmbergNilsPolimi/mdisd/tree/main/doc" target="_blank">doc</a> directory.
 
 ## Installation
 
@@ -96,11 +98,17 @@ The directory structure of the library is as follows:
 
 ## Documentation
 
-For detailed documentation on how to use the library, please refer to the comments in the code and the provided examples.
+For detailed documentation on how to use the library, please refer to the comments in the code, the provided examples, the <a href="https://github.com/MalmbergNilsPolimi/mdisd/blob/main/doc/mdisdReport.pdf" target="_blank">mdisdReport.pdf</a> report and the Doxyfile. You can use the Doxyfile by using the following commands:
+
+```bash
+cd mdisd/doc
+doxygen Doxyfile
+```
+Then open in your browser the file mdisd/doc/html/index.html.
 
 ## Contributing
 
-Contributions are welcome! If you find any issues or have suggestions for improvements, please open an issue or submit a pull request on GitHub.
+Contributions are welcome (but only after August 2024, when I would have been graded on this project)! If you find any issues or have suggestions for improvements, please open an issue or submit a pull request on GitHub.
 
 ## License
 
