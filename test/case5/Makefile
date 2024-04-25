@@ -1,11 +1,15 @@
-# Variables
+############################################
+######### MAKEFILE FOR TEST CASE 5 #########
+############################################
+
 INCLUDE_DIR_GENERAL := ./../../include
 INCLUDE_DIR_RBF := ./../../include/RBF
 
-################################################################
-#### THE USER NEED TO CHANGE HERE THE PATH TO EIGEN LIBRARY ####
-################################################################
+######################################################################################
+############### THE USER NEED TO CHANGE HERE THE PATH TO EIGEN LIBRARY ###############
+######################################################################################
 INCLUDE_DIR_EIGEN := /u/sw/toolchains/gcc-glibc/11.2.0/pkgs/eigen/3.3.9/include/eigen3
+######################################################################################
 
 SRC_DIR_RBF := ./../../src/RBF
 OBJ_DIR := ./obj
@@ -49,7 +53,6 @@ $(OBJ_DIR)/RBFunctions.o: $(RBF_FUNCTIONS_SRC)
 # run
 run:
 	@./bin/prog
-
 
 # Clean
 clean:

@@ -1,13 +1,16 @@
-# Variables
+############################################
+######### MAKEFILE FOR TEST CASE 4 #########
+############################################
+
 INCLUDE_DIR_GENERAL := ./../../include
 INCLUDE_DIR_RBF := ./../../include/RBF
 INCLUDE_DIR_OLS := ./../../include/OLS
 
-
-################################################################
-#### THE USER NEED TO CHANGE HERE THE PATH TO EIGEN LIBRARY ####
-################################################################
+######################################################################################
+############### THE USER NEED TO CHANGE HERE THE PATH TO EIGEN LIBRARY ###############
+######################################################################################
 INCLUDE_DIR_EIGEN := /u/sw/toolchains/gcc-glibc/11.2.0/pkgs/eigen/3.3.9/include/eigen3
+######################################################################################
 
 SRC_DIR_RBF := ./../../src/RBF
 SRC_DIR_OLS := ./../../src/OLS
@@ -69,7 +72,6 @@ $(OBJ_DIR)/rescaling.o: $(RESCALE_SRC)
 # run
 run:
 	@./bin/prog
-
 
 # Clean
 clean:
