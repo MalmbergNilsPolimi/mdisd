@@ -5,25 +5,27 @@
 #include <iomanip>
 #include "RBFunctions.hpp"
 
+//////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////// TEST CASE 0 ///////////////////////////////////
+/////////// PLOT OF RADIAL BASIS FUNCTIONS FOR DIFFERENT SCALE FACTORS ///////////
+//////////////////////////////////////////////////////////////////////////////////
+
 int main() {
 
+    // Definition of the scale factors.
     Eigen::VectorXd scale_factor(9);
-    scale_factor << 0.5, 
-                    0.75,
-                    1,
-                    1.25,
-                    1.50,
-                    2,
-                    3,
-                    4,
-                    5;
+    scale_factor << 0.5, 0.75, 1, 1.25, 1.50, 2, 3, 4, 5;
 
+    // Definition of the x axis.
     Eigen::VectorXd tab_x = Eigen::VectorXd::LinSpaced(100, -10, 10);
+
+    // Definition of y axis.
     Eigen::MatrixXd gaussian_mat(scale_factor.size(), tab_x.size());
     Eigen::MatrixXd multiquadratic_mat(scale_factor.size(), tab_x.size());
     Eigen::MatrixXd inverseMultiquadratic_mat(scale_factor.size(), tab_x.size());
     Eigen::MatrixXd thinPlateSpline_mat(scale_factor.size(), tab_x.size());
 
+    // Computation of the radial basis functions.
     for (size_t i = 0; i < scale_factor.size(); ++i)
     {
         for (size_t j = 0; j < tab_x.size(); ++j)
@@ -33,22 +35,23 @@ int main() {
             inverseMultiquadratic_mat(i,j) = RBFunctions::inverseMultiquadratic(tab_x(j), scale_factor(i));
             thinPlateSpline_mat(i,j) = RBFunctions::thinPlateSpline(tab_x(j), scale_factor(i));
         }
-        
     }
 
+    // Boolean used to export in .svg the plots.
     bool EXPORT{true};
 
     std::filesystem::create_directories("./plot/");
     std::filesystem::create_directories("./plot/files/");
     std::filesystem::create_directories("./plot/figures/");
-    
+
+
     //////////////////////////////
     ////////// GAUSSIAN //////////
     //////////////////////////////
 
     std::ofstream dataFileGauss("./plot/files/data_gaussian.dat");
     if (!dataFileGauss.is_open()) {
-        std::cerr << "Error: Unable to open data file for Gauss." << std::endl;
+        std::cerr << "Error: Unable to open data_gaussian.dat file" << std::endl;
         return 1;
     }
 
@@ -64,7 +67,7 @@ int main() {
 
     std::ofstream gnuplotScriptGauss("./plot/files/plot_gaussian.gnu");
     if (!gnuplotScriptGauss.is_open()) {
-        std::cerr << "Error: Unable to open GNUplot script file." << std::endl;
+        std::cerr << "Error: Unable to open GNUplot script for gaussian file." << std::endl;
         return 1;
     }
 
@@ -88,12 +91,12 @@ int main() {
 
     if (EXPORT)
     {   
+        // Need to replot the plot to see it on the screen.
         gnuplotScriptGauss << "set terminal wxt" << std::endl;
         gnuplotScriptGauss << "replot" << std::endl;
     }
 
     gnuplotScriptGauss.close();
-
 
 
     //////////////////////////////
@@ -102,7 +105,7 @@ int main() {
 
     std::ofstream dataFilemultiquad("./plot/files/data_multiquad.dat");
     if (!dataFilemultiquad.is_open()) {
-        std::cerr << "Error: Unable to open data file for data_multiquad." << std::endl;
+        std::cerr << "Error: Unable to open data_multiquad.dat file." << std::endl;
         return 1;
     }
 
@@ -118,7 +121,7 @@ int main() {
 
     std::ofstream gnuplotScriptmultiquad("./plot/files/plot_multiquad.gnu");
     if (!gnuplotScriptmultiquad.is_open()) {
-        std::cerr << "Error: Unable to open GNUplot script file." << std::endl;
+        std::cerr << "Error: Unable to open GNUplot script for multiquad file." << std::endl;
         return 1;
     }
 
@@ -146,9 +149,7 @@ int main() {
         gnuplotScriptmultiquad << "replot" << std::endl;
     }
     
-
     gnuplotScriptmultiquad.close();
-
 
 
     //////////////////////////////
@@ -157,7 +158,7 @@ int main() {
 
     std::ofstream dataFileinvmultiquad("./plot/files/data_invmultiquad.dat");
     if (!dataFileinvmultiquad.is_open()) {
-        std::cerr << "Error: Unable to open data file for data_invmultiquad." << std::endl;
+        std::cerr << "Error: Unable to open data_invmultiquad.dat file." << std::endl;
         return 1;
     }
 
@@ -173,7 +174,7 @@ int main() {
 
     std::ofstream gnuplotScriptinvmultiquad("./plot/files/plot_invmultiquad.gnu");
     if (!gnuplotScriptinvmultiquad.is_open()) {
-        std::cerr << "Error: Unable to open GNUplot script file." << std::endl;
+        std::cerr << "Error: Unable to open GNUplot script for invmultiquad file." << std::endl;
         return 1;
     }
 
@@ -201,7 +202,6 @@ int main() {
         gnuplotScriptinvmultiquad << "replot" << std::endl;
     }
     
-
     gnuplotScriptinvmultiquad.close();
 
 
@@ -211,7 +211,7 @@ int main() {
 
     std::ofstream dataFilethinPlateSpline("./plot/files/data_thinPlateSpline.dat");
     if (!dataFilethinPlateSpline.is_open()) {
-        std::cerr << "Error: Unable to open data file for data_thinPlateSpline." << std::endl;
+        std::cerr << "Error: Unable to open data_thinPlateSpline.dat file." << std::endl;
         return 1;
     }
 
@@ -227,7 +227,7 @@ int main() {
 
     std::ofstream gnuplotScriptthinPlateSpline("./plot/files/plot_thinPlateSpline.gnu");
     if (!gnuplotScriptthinPlateSpline.is_open()) {
-        std::cerr << "Error: Unable to open GNUplot script file." << std::endl;
+        std::cerr << "Error: Unable to open GNUplot script for thinPlateSpline file." << std::endl;
         return 1;
     }
 
@@ -254,7 +254,6 @@ int main() {
         gnuplotScriptthinPlateSpline << "set terminal wxt" << std::endl;
         gnuplotScriptthinPlateSpline << "replot" << std::endl;
     }
-    
 
     gnuplotScriptthinPlateSpline.close();
 

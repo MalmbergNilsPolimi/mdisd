@@ -9,6 +9,13 @@
 #include "RBFinterpolator.hpp"
 #include "OLSinterpolator.hpp"
 
+
+//////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////// TEST CASE 3 ///////////////////////////////////
+////////////// ERROR ON 4D INTERPOLATION USING ISOTROPIC PARAMETERS //////////////
+//////////////////////////////////////////////////////////////////////////////////
+
+
 template<typename T>
 T generateRandomNumber(T min, T max) {
     std::random_device rd;
@@ -27,7 +34,7 @@ void printTable(const Eigen::VectorXd& dimensions,
                 const Eigen::VectorXd& RBF_poly_errors,
                 const Eigen::VectorXd& OLS_interpolations,
                 const Eigen::VectorXd& OLS_errors) {
-    // Affichage du tableau
+
     std::cout << "____________________________________________________________________________________________________________________________________________" << std::endl;
     std::cout << std::setw(4) << std::left << "|| "
               << std::setw(14) << std::left << "|| Real value"
@@ -60,16 +67,16 @@ void printTable(const Eigen::VectorXd& dimensions,
 
 void plotData(const Eigen::VectorXd& error_RBF, const Eigen::VectorXd& error_NRBF,
               const Eigen::VectorXd& error_RBFP, const Eigen::VectorXd& error_OLS, 
-              const bool EXPORT) {
+              const std::string title, const bool EXPORT) {
 
     std::filesystem::create_directories("./plot/");
     std::filesystem::create_directories("./plot/files/");
     std::filesystem::create_directories("./plot/figures/");
 
-    // RBF error
+    // RBF error.
     std::ofstream dataFileRBF("./plot/files/error_RBF.dat");
     if (!dataFileRBF.is_open()) {
-        std::cerr << "Error: Unable to open data file." << std::endl;
+        std::cerr << "Error: Unable to open RBF data file." << std::endl;
         return;
     }
 
@@ -78,10 +85,10 @@ void plotData(const Eigen::VectorXd& error_RBF, const Eigen::VectorXd& error_NRB
     }
     dataFileRBF.close();
 
-    // NRBF error
+    // NRBF error.
     std::ofstream dataFileRBFnorm("./plot/files/error_NRBF.dat");
     if (!dataFileRBFnorm.is_open()) {
-        std::cerr << "Error: Unable to open data file." << std::endl;
+        std::cerr << "Error: Unable to open NRBF data file." << std::endl;
         return;
     }
 
@@ -90,10 +97,10 @@ void plotData(const Eigen::VectorXd& error_RBF, const Eigen::VectorXd& error_NRB
     }
     dataFileRBFnorm.close();
 
-    // RBFP error
+    // RBFP error.
     std::ofstream dataFileRBFpoly("./plot/files/error_RBFP.dat");
     if (!dataFileRBFpoly.is_open()) {
-        std::cerr << "Error: Unable to open data file." << std::endl;
+        std::cerr << "Error: Unable to open RBFP data file." << std::endl;
         return;
     }
 
@@ -102,10 +109,10 @@ void plotData(const Eigen::VectorXd& error_RBF, const Eigen::VectorXd& error_NRB
     }
     dataFileRBFpoly.close();
 
-    // OLS error
+    // OLS error.
     std::ofstream dataFileOLS("./plot/files/error_OLS.dat");
     if (!dataFileOLS.is_open()) {
-        std::cerr << "Error: Unable to open data file." << std::endl;
+        std::cerr << "Error: Unable to open OLS data file." << std::endl;
         return;
     }
 
@@ -114,14 +121,12 @@ void plotData(const Eigen::VectorXd& error_RBF, const Eigen::VectorXd& error_NRB
     }
     dataFileOLS.close();
 
-    std::string title{"Relative error on a 4D interpolation"};
-
-    // GNUplot commands
+    // GNUplot commands.
     std::ofstream gnuplotScript("./plot/files/plot_script.gnu");
     
     if (EXPORT)
     {
-        // To export the plot in svg format
+        // To export the plot in svg format.
         gnuplotScript << "set terminal svg" << std::endl;
         gnuplotScript << "set output \"" << "./plot/figures/case3_plot.svg" << "\"" << std::endl;
     }
@@ -144,15 +149,15 @@ void plotData(const Eigen::VectorXd& error_RBF, const Eigen::VectorXd& error_NRB
     
     if (EXPORT)
     {   
-        // The export "cancel" the plot
-        // Replot to see it in a window
+        // The export "cancel" the plot.
+        // Replot to see it in a window.
         gnuplotScript << "set terminal wxt" << std::endl;
         gnuplotScript << "replot" << std::endl;
     }
 
     gnuplotScript.close();
 
-    // Execute GNUplot
+    // Execute GNUplot.
     system("gnuplot -persist ./plot/files/plot_script.gnu");
 }
 
@@ -174,7 +179,7 @@ int main() {
         return parameters;
     };
 
-    // Definition of the function to interpolate (THE USER CAN CHANGE HERE THE FUNCTION)
+    // Definition of the function to interpolate.
     auto funToInterpolate = [](const Eigen::VectorXd& params) {
         double res{};
 
@@ -190,57 +195,56 @@ int main() {
     };
 
 
-    // Dimensions of the problem
-    size_t num_params{4};       // number of parameters taken by the function
-    size_t num_measures{150};   // number of known points
-    size_t num_points{10};      // number of points to interpolate
+    // Dimensions of the problem.
+    size_t num_params{4};       // 4 parameters taken by the function.
+    size_t num_measures{150};   // 150 known points.
+    size_t num_points{10};      // 10 points to interpolate.
     
-    // [inf, sup] is the interval of definition of the parameter
+    // [inf, sup] is the interval of definition of the parameter.
     Eigen::VectorXd tab_inf(num_params);
     tab_inf << 0. , 0. , 0. , 0.; 
     Eigen::VectorXd tab_sup(num_params);
     tab_inf << 1. , 1. , 1. , 1.; 
 
-    // Declaration of the known parameters, known measurements and set of parameters used for the interpolation
+    // Declaration of the known parameters, known measurements and set of parameters used for the interpolation.
     Eigen::MatrixXd parameters(num_measures, num_params);
     Eigen::VectorXd measurements(num_measures);
     Eigen::MatrixXd parametersFORinterp(num_points, num_params);
 
-    // Creation of a random matrix containing the parameters for each measurement    
+    // Creation of a random matrix containing the parameters for each measurement.    
     parameters = fillParameters(num_measures, num_params, tab_inf, tab_sup);
 
-    // Creation of the measurements 
-    for (size_t i = 0; i < num_measures; i++)
+    // Creation of the measurements.
+    for (size_t i = 0; i < num_measures; ++i)
     {
         measurements(i) = funToInterpolate(parameters.row(i));
     }
 
-    // Creation of the parameters for which the user want the estimated output
+    // Creation of the parameters for which the user want the estimated output.
     parametersFORinterp = fillParameters(num_points, num_params, tab_inf, tab_sup);
 
-
-    // Use of RBF interpolation method
-    double scale_factor{0.5};   // (THE USER CAN CHANGER HERE THE VALUE OF THE SCALE FACTOR)
-    RBFInterpolator interpolatorRBF(&RBFunctions::gaussian, scale_factor); // (THE USER CAN CHANGE HERE THE USED RBFUNCTION)
+    // Use of RBF interpolation method.
+    double scale_factor{0.5};
+    RBFInterpolator interpolatorRBF(&RBFunctions::gaussian, scale_factor);
     Eigen::VectorXd RBF_points_interpolated = interpolatorRBF.interpolate(parametersFORinterp, parameters, measurements);
 
-    // Use of normalized RBF interpolation method
+    // Use of normalized RBF interpolation method.
     bool normalize{true};
     RBFInterpolator interpolatorRBFnorm(&RBFunctions::gaussian, scale_factor, normalize);
     Eigen::VectorXd RBF_norm_points_interpolated = interpolatorRBFnorm.interpolate(parametersFORinterp, parameters, measurements);
 
-    // Use of RBF augmented with polynomial
+    // Use of RBF augmented with polynomial.
     normalize=false;
     bool polynomial{true};
     RBFInterpolator interpolatorRBFpoly(&RBFunctions::gaussian, scale_factor, normalize, polynomial);
     Eigen::VectorXd RBF_poly_points_interpolated = interpolatorRBFpoly.interpolate(parametersFORinterp, parameters, measurements);
 
-    // Use of OLS approximation method
+    // Use of OLS approximation method.
     OLSInterpolator interpolatorOLS;
     Eigen::VectorXd OLS_points_interpolated = interpolatorOLS.interpolate(parametersFORinterp, parameters, measurements);
     Eigen::VectorXd points_real(num_points);
 
-    // Computing of the real values
+    // Computing of the real values.
     for (size_t i = 0; i < num_points; ++i)
     {
         points_real(i) = funToInterpolate(parametersFORinterp.row(i));
@@ -260,6 +264,7 @@ int main() {
     printTable(points, points_real, RBF_points_interpolated, RBF_relative_errors, RBF_norm_points_interpolated, RBF_norm_relative_errors, RBF_poly_points_interpolated, RBF_poly_relative_errors, OLS_points_interpolated, OLS_relative_errors);
     
     bool EXPORT{true};
-    plotData(RBF_relative_errors, RBF_norm_relative_errors, RBF_poly_relative_errors, OLS_relative_errors, EXPORT);
+    std::string title{"Relative error on a 4D interpolation"};
+    plotData(RBF_relative_errors, RBF_norm_relative_errors, RBF_poly_relative_errors, OLS_relative_errors, title, EXPORT);
     return 0;
 }
