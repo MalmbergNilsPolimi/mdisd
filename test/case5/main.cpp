@@ -119,11 +119,17 @@ int main() {
         return res;
     };
 
-    Eigen::VectorXi DIMENSIONS(6);
-    DIMENSIONS << 1, 2, 4, 6, 8, 10;
+    // Eigen::VectorXi DIMENSIONS(6);
+    // DIMENSIONS << 1, 2, 4, 6, 8, 10;
 
-    Eigen::VectorXi KNOWN_POINTS(13);
-    KNOWN_POINTS << 5, 10, 20, 30, 40, 50, 100, 150, 200, 250, 300, 350, 400;
+    // Eigen::VectorXi KNOWN_POINTS(17);
+    // KNOWN_POINTS << 5, 10, 20, 30, 40, 50, 100, 150, 200, 250, 300, 350, 400, 500, 600, 800, 1000;
+
+    Eigen::VectorXi DIMENSIONS(3);
+    DIMENSIONS << 6, 8, 10;
+
+    Eigen::VectorXi KNOWN_POINTS(9);
+    KNOWN_POINTS << 100, 500, 1000, 2000, 3000, 4000, 5000, 6000, 10000;
 
     int steps{static_cast<int>(DIMENSIONS.size() * KNOWN_POINTS.size())};
 
