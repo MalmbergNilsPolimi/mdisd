@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0) # version of cmake to use.
 
-project(mdsid VERSION 1.0.1) # Name and version of the library.
+project(mdsid VERSION 1.0.2) # Name and version of the library.
 
 set(SUBDIRECTORIES "OLS" "RBF") # List of subdirectories to include.
 
