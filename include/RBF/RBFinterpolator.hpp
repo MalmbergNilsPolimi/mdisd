@@ -8,17 +8,19 @@
  */
 class RBFInterpolator : public Interpolator {
 private:
-    std::function<double(double, double)> rbfunction; /**< RBF function. */
+    std::function<double(double, double)> rbfunction; /**< Radial basis function. */
     double r0; /**< Scale factor. */
-    bool normalizeRBF; /**< Normalization of RBF. */
-    bool polynomialRBF; /**< Add polynomial term. */
+    bool normalizeRBF; /**< Normalization of RBF if true. */
+    bool polynomialRBF; /**< Add a linear polynomial term if true. */
 
 public:
     /**
      * @brief Constructs an RBFInterpolator object.
      * 
-     * @param rbfunction The RBF function.
+     * @param rbfunction The radial basis function.
      * @param r0 The scale factor.
+     * @param normalizeRBF Boolean to activate normalization of the RBF.
+     * @param polynomialRBF Boolean to activate the additional polynomial term in RBF.
      */
     RBFInterpolator(std::function<double(double, double)> rbfunction, double r0,
                     bool normalizeRBF=false, bool polynomialRBF=false)
@@ -27,9 +29,10 @@ public:
     /**
      * @brief Interpolates a value based on given parameters and measurements using RBF method.
      * 
-     * @param parametersFORinterp The points we want to interpolate.
-     * @param parameters The matrix of parameters.
-     * @param measurements The measurements corresponding to the parameters.
+     * @param parametersFORinterp Th matrix containing the points to interpolate.
+     * @param parameters The matrix containing the known parameters.
+     * @param measurements The measurements corresponding to the known parameters.
+     * @param regression Optional vector where the weights will be stored.
      * @return The interpolated value.
      */
     Eigen::VectorXd interpolate(const Eigen::MatrixXd& parametersFORinterp,

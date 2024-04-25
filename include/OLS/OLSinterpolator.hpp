@@ -12,9 +12,10 @@ public:
     /**
      * @brief Interpolates a value based on given parameters and measurements using OLS method.
      * 
-     * @param parametersFORinterp The points we want to interpolate.
-     * @param parameters The matrix of parameters.
-     * @param measurements The measurements corresponding to the parameters.
+     * @param parametersFORinterp Th matrix containing the points to interpolate.
+     * @param parameters The matrix containing the known parameters.
+     * @param measurements The measurements corresponding to the known parameters.
+     * @param regression Optional vector where the weights will be stored.
      * @return The interpolated value.
      */
     Eigen::VectorXd interpolate(const Eigen::MatrixXd& parametersFORinterp,
