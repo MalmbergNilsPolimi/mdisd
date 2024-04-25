@@ -137,7 +137,7 @@ void plotData(const Eigen::VectorXd& error_RBF_BR, const Eigen::VectorXd& error_
     gnuplotScript << "set style line 3 lw 2 lc rgb '#0044a5'" << std::endl;
     gnuplotScript << "set style line 4 lw 2 lc rgb '#888888'" << std::endl;
     gnuplotScript << "plot \"" << "./plot/files/error_RBF_"+RBF+"_BR.dat" << "\" with lines linestyle 1 title \"without rescaling\","
-                << " \"" << "./plot/files/error_RBF_"+RBF+"_AR1.dat" << "\" with lines linestyle 2 title \" Min-Max rescaling\","
+                << " \"" << "./plot/files/error_RBF_"+RBF+"_AR1.dat" << "\" with points pointtype 7 title \" Min-Max rescaling\","
                 << " \"" << "./plot/files/error_RBF_"+RBF+"_AR2.dat" << "\" with lines linestyle 3 title \"Mean rescaling\","
                 << " \"" << "./plot/files/error_RBF_"+RBF+"_AR3.dat" << "\" with lines linestyle 4 title \"Z-score rescaling\""
                 << std::endl;
@@ -202,13 +202,9 @@ int main() {
     
     // [inf, sup] is the interval of definition of the parameter
     Eigen::VectorXd tab_inf(num_params);
-    tab_inf << 0. , -5. , 100. , 0.9; 
+    tab_inf << -1. , 10. , 1. , 0.; 
     Eigen::VectorXd tab_sup(num_params);
-    tab_inf << 10. , -2. , 1000. , 1.2; 
-    // Eigen::VectorXd tab_inf(num_params);
-    // tab_inf << 0. , 0. , 0. , 0.; 
-    // Eigen::VectorXd tab_sup(num_params);
-    // tab_inf << 1. , 1. , 1. , 1.; 
+    tab_inf << 1. , 20. , 5. , 0.5; 
 
     // Declaration of the known parameters, known measurements and set of parameters used for the interpolation
     Eigen::MatrixXd parameters(num_measures, num_params);
