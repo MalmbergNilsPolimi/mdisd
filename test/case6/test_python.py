@@ -60,7 +60,7 @@ for i in range(num_points):
 ols_interpolator = mdisd_py.OLSInterpolator()
 
 ols_results = ols_interpolator.interpolate(points_to_interpolate, known_parameters, known_measurements)
-ols_results2, ols_regression = ols_interpolator.interpolate_with_regression(points_to_interpolate, known_parameters, known_measurements)
+ols_results2, ols_regression = ols_interpolator.interpolate_with_coefficients(points_to_interpolate, known_parameters, known_measurements)
 
 
 print("\n")
@@ -72,7 +72,7 @@ print("OLS weights:\n", ols_regression)
 rbf_interpolator = mdisd_py.RBFInterpolator(rbfunction.Multiquadratic(), 0, False, False)
 
 rbf_results = rbf_interpolator.interpolate(points_to_interpolate, known_parameters, known_measurements)
-rbf_results2, rbf_regression = rbf_interpolator.interpolate_with_regression(points_to_interpolate, known_parameters, known_measurements)
+rbf_results2, rbf_regression = rbf_interpolator.interpolate_with_coefficients(points_to_interpolate, known_parameters, known_measurements)
 
 
 print("RBF weights:\n", rbf_regression)
@@ -81,7 +81,7 @@ print("RBF weights:\n", rbf_regression)
 nrbf_interpolator = mdisd_py.RBFInterpolator(rbfunction.Multiquadratic(), 0, True, False)
 
 nrbf_results = nrbf_interpolator.interpolate(points_to_interpolate, known_parameters, known_measurements)
-nrbf_results2, nrbf_regression = nrbf_interpolator.interpolate_with_regression(points_to_interpolate, known_parameters, known_measurements)
+nrbf_results2, nrbf_regression = nrbf_interpolator.interpolate_with_coefficients(points_to_interpolate, known_parameters, known_measurements)
 
 
 print("NRBF weights:\n", nrbf_regression)
@@ -91,7 +91,7 @@ print("NRBF weights:\n", nrbf_regression)
 rbfp_interpolator = mdisd_py.RBFInterpolator(rbfunction.Multiquadratic(), 0, False, True)
 
 rbfp_results = rbfp_interpolator.interpolate(points_to_interpolate, known_parameters, known_measurements)
-rbfp_results2, rbfp_regression = rbfp_interpolator.interpolate_with_regression(points_to_interpolate, known_parameters, known_measurements)
+rbfp_results2, rbfp_regression = rbfp_interpolator.interpolate_with_coefficients(points_to_interpolate, known_parameters, known_measurements)
 
 print("RBFP weights:\n", rbfp_regression)
 

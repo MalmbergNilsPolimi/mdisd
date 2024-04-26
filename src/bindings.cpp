@@ -13,7 +13,7 @@ namespace py = pybind11;
 
 
 template <typename T>
-py::tuple interpolate_with_regression(T& self, const Eigen::MatrixXd& points_to_interpolate, const Eigen::MatrixXd& known_parameters, const Eigen::VectorXd& known_measurements) {
+py::tuple interpolate_with_coefficients(T& self, const Eigen::MatrixXd& points_to_interpolate, const Eigen::MatrixXd& known_parameters, const Eigen::VectorXd& known_measurements) {
     Eigen::VectorXd regression;
     Eigen::VectorXd results = self.interpolate(points_to_interpolate, known_parameters, known_measurements, &regression);
     return py::make_tuple(results, regression);
@@ -25,12 +25,12 @@ PYBIND11_MODULE(mdisd_py, m) {
     py::class_<OLSInterpolator>(m, "OLSInterpolator")
         .def(py::init<>())
         .def("interpolate", static_cast<Eigen::VectorXd (OLSInterpolator::*)(const Eigen::MatrixXd&, const Eigen::MatrixXd&, const Eigen::VectorXd&) const>(&OLSInterpolator::interpolate), py::arg("points_to_interpolate"), py::arg("known_parameters"), py::arg("known_measurements"))
-        .def("interpolate_with_regression", &interpolate_with_regression<OLSInterpolator>);
+        .def("interpolate_with_coefficients", &interpolate_with_coefficients<OLSInterpolator>);
 
     py::class_<RBFInterpolator>(m, "RBFInterpolator")
         .def(py::init<std::function<double(double, double)>, double, bool, bool>(), py::arg("rbf_function"), py::arg("scale_factor"), py::arg("flag1"), py::arg("flag2"))
         .def("interpolate", static_cast<Eigen::VectorXd (RBFInterpolator::*)(const Eigen::MatrixXd&, const Eigen::MatrixXd&, const Eigen::VectorXd&) const>(&RBFInterpolator::interpolate), py::arg("points_to_interpolate"), py::arg("known_parameters"), py::arg("known_measurements"))
-        .def("interpolate_with_regression", &interpolate_with_regression<RBFInterpolator>);
+        .def("interpolate_with_coefficients", &interpolate_with_coefficients<RBFInterpolator>);
 
     
     py::class_<std::function<double(double, double)>>(m, "FunctionDD");
