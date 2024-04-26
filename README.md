@@ -43,7 +43,7 @@ The mdisd C++ library is dedicated to the interpolation of scattered data with o
 - Efficient computation using <a href="https://eigen.tuxfamily.org/" target="_blank">Eigen</a> library for linear algebra.
 - Use of the library in Python possible thanks to bindings made with <a href="https://github.com/pybind/pybind11" target="_blank">pybind11</a>.
 
-## How to test the library
+## How to test the library (C++)
 
 Before testing the library, make sure you have Eigen3 installed and modify in each Makefile (of each test case that you want to use) the path to the library.
 
@@ -59,13 +59,19 @@ make run
 
 For more information on the various test cases implemented, you can consult the commented <a href="https://github.com/MalmbergNilsPolimi/mdisd/tree/main/test" target="_blank">code</a> directly or consult the section dedicated to tests in the <a href="https://github.com/MalmbergNilsPolimi/mdisd/blob/main/doc/mdisdReport.pdf" target="_blank">mdisdReport.pdf</a> report located in the <a href="https://github.com/MalmbergNilsPolimi/mdisd/tree/main/doc" target="_blank">doc</a> directory.
 
+## How to test the library (Python)
+
+All informations are provided in the README.md in the test/case6/ folder and in the report. The main ideas are that you need to update all paths in the CMakeLists.txt file (path to pybind11, Eigen and Python). Then you need to proceed of the installation of the library following the instructions below. After that, you will obtain a .so file of mdisd_py, the Python version of the library, that you just need to include to your Python project. 
+
 ## Installation
 
 Before building the library, make sure you have the following dependencies installed:
 - CMake (version 3.0 or higher)
 - Eigen3
+- Python
+- pybind11 (you can just clone it on the root of the library)
 
-To build and install the library:
+To build and install the library, update all paths referring to the libraries above in the CMakeLists.txt file and then use the commands (in the root):
 ```bash
 mkdir build
 cd build
@@ -76,16 +82,7 @@ sudo make install
 
 ## Usage
 
-Once installed, you can use the library in your C++ projects by including the appropriate headers and linking against the `mdisd` library. Here's an example:
-
-```cpp
-#include "mdisd/RBFinterpolator.hpp"
-
-int main() {
-    // Your code here
-    return 0;
-}
-```
+Concerning the usage of the library, you will find examples in the different test cases and explanations in the report (in mdsid/doc).
 
 ## Directory Structure
 
