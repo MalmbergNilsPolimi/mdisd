@@ -31,7 +31,7 @@ limitations under the License.
 
 
 
-The mdisd C++ library is dedicated to the interpolation of scattered data with one or more dimensions. The library is also available for use with Python (IN COMING). It was created in 2024 by Nils Malmberg, then a student at  <a href="https://www.polimi.it/en" target="_blank">Politecnico di Milano (polimi)</a>. This library is a project developed as part of the "Advanced Programming for Scientific Computing" course given at polimi.
+The mdisd C++ library is dedicated to the interpolation of scattered data with one or more dimensions. The library is also available for use with Python. It was created in 2024 by Nils Malmberg, then a student at  <a href="https://www.polimi.it/en" target="_blank">Politecnico di Milano (polimi)</a>. This library is a project developed as part of the "Advanced Programming for Scientific Computing" course given at polimi.
 
 ## Features
 
@@ -41,7 +41,7 @@ The mdisd C++ library is dedicated to the interpolation of scattered data with o
 - Offers the possibility to add a linear polynomial to RBF interpolation.
 - Offers pre-processing options (data rescaling and normalization).
 - Efficient computation using <a href="https://eigen.tuxfamily.org/" target="_blank">Eigen</a> library for linear algebra.
-- Use of the library in Python possible thanks to bindings made with <a href="https://github.com/pybind/pybind11" target="_blank">pybind11</a> (IN COMING).
+- Use of the library in Python possible thanks to bindings made with <a href="https://github.com/pybind/pybind11" target="_blank">pybind11</a>.
 
 ## How to test the library
 
