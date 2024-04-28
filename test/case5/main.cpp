@@ -119,7 +119,7 @@ int main() {
         return res;
     };
 
-    Eigen::VectorXi DIMENSIONS(3);
+    Eigen::VectorXi DIMENSIONS(6);
     DIMENSIONS << 1, 2, 4, 6, 8, 10;
 
     Eigen::VectorXi KNOWN_POINTS(17);
