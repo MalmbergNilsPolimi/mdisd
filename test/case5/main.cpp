@@ -122,12 +122,11 @@ void plotRelativeError(const Eigen::MatrixXd& RE, const std::string known_points
     gnuplot_script << "set title 'Relative Error in function of the position of the point'\n";
     gnuplot_script << "set xlabel 'x'\n";
     gnuplot_script << "set ylabel 'y'\n";
-    gnuplot_script << "set zlabel 'relative error'\n";
+    gnuplot_script << "set zlabel 'relative error [%]' rotate by 90\n";
     gnuplot_script << "set pm3d at s\n";
     gnuplot_script << "set palette defined (0 'blue', 1 'green', 2 'yellow', 3 'red')\n";
     gnuplot_script << "set xrange [0:1]\n";
-    gnuplot_script << "set yrange [1:0]\n";
-    // gnuplot_script << "set zrange [0:1.6]\n";
+    gnuplot_script << "set yrange [0:1]\n";
     gnuplot_script << "set view 60, 30, 1, 1\n";
     gnuplot_script << "set xyplane at 0\n";
     gnuplot_script << "splot './plot/files/relative_error_"+dimensions+"_"+known_points+"knownpoints.dat' using 1:2:3 with points pointtype 7 pointsize 1 palette title 'Points'\n";
@@ -205,7 +204,7 @@ int main() {
     gnuplot_script << "set pm3d at s\n";
     gnuplot_script << "set palette defined (0 'blue', 1 'green', 2 'yellow', 3 'red')\n";
     gnuplot_script << "set xrange [0:1]\n";
-    gnuplot_script << "set yrange [1:0]\n";
+    gnuplot_script << "set yrange [0:1]\n";
     gnuplot_script << "set zrange [0:1.6]\n";
     gnuplot_script << "set view 60, 30, 1, 1\n";
     gnuplot_script << "set xyplane at 0\n";
@@ -246,10 +245,10 @@ int main() {
             double x{params(0)};
             double y{params(1)};
             double z{params(2)};
-            res = 0.75 * exp(-(9 * x - 2) * (9 * x - 2) / 4 + (9 * y - 2) * (9 * y - 2) / 4 + (9 * z - 2) * (9 * z - 2) / 4) + 
-            0.75 * exp(-(9 * x + 1) * (9 * x + 1) / 49 - (9 * y + 1) / 10 - (9 * z + 1) / 10) + 
-            0.5 * exp(-(9 * x - 7) * (9 * x - 7) / 4 - (9 * y - 3) * (9 * y - 3) / 4 + (9 * z - 5) * (9 * z - 5) / 4) - 
-            0.2 * exp(-(9 * x - 4) * (9 * x - 4) - (9 * y - 7) * (9 * y - 7) - (9 * z - 5) * (9 * z - 5));
+            res = 0.75 * exp(-( (9 * x - 2) * (9 * x - 2) + (9 * y - 2) * (9 * y - 2) + (9 * z - 2) * (9 * z - 2) ) / 4) + 
+            0.75 * exp(-(9 * x + 1) * (9 * x + 1) / 49 - (9 * y + 1) * (9 * y + 1) / 10 - (9 * z + 1) * (9 * z + 1) / 10) + 
+            0.5 * exp(-( (9 * x - 7) * (9 * x - 7) + (9 * y - 3) * (9 * y - 3) + (9 * z - 5) * (9 * z - 5) )/ 4) - 
+            0.2 * exp(-(9 * x - 4) * (9 * x - 4) - (9 * y - 7) * (9 * y - 7) - (9 * z - 5));
         } else {
             std::cerr << "Error: Franke function not defined for this number of dimensions" << std::endl;
         }
@@ -261,8 +260,8 @@ int main() {
     size_t num_params{2};
     std::string dim{"2D"};
 
-    Eigen::VectorXi KNOWN_POINTS(7);
-    KNOWN_POINTS << 100, 500, 1000, 2000, 3000, 4000, 5000;
+    Eigen::VectorXi KNOWN_POINTS(4);
+    KNOWN_POINTS << 100, 200, 500, 1000;
 
     int steps{static_cast<int>(KNOWN_POINTS.size())};
    
@@ -318,7 +317,11 @@ int main() {
         for (size_t l = 0; l < points_real.size(); ++l)
         {
             MSE(j) += (points_real(l) - RBF_points_interpolated(l))*(points_real(l) - RBF_points_interpolated(l));
-            RE(l,num_params) = (RBF_points_interpolated(l) - points_real(l)) / abs(points_real(l));
+            
+            if (num_params == 2)
+            {
+                RE(l,num_params) = 100*(RBF_points_interpolated(l) - points_real(l)) / abs(points_real(l));
+            }
 
             double err{abs(RBF_points_interpolated(l) - points_real(l))};
             if (err > MaxE(j))
@@ -328,7 +331,10 @@ int main() {
         }
         MSE(j) /= num_points;
 
-        plotRelativeError(RE, std::to_string(num_measures), dim);
+        if (num_params == 2)
+        {
+            plotRelativeError(RE, std::to_string(num_measures), dim);
+        }
     }
 
     std::cout << std::endl;
