@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0) # version of cmake to use.
 
-project(mdisd VERSION 1.1.0) # Name and version of the library.
+project(mdisd VERSION 1.2.0) # Name and version of the library.
 
 set(SUBDIRECTORIES "OLS" "RBF") # List of subdirectories to include.
 
