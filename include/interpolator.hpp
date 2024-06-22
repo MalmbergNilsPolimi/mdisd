@@ -26,4 +26,6 @@ public:
                                         const Eigen::MatrixXd& parameters,
                                         const Eigen::VectorXd& measurements,
                                         Eigen::VectorXd* regression) const = 0;
+    
+    virtual ~Interpolator() = default;
 };
