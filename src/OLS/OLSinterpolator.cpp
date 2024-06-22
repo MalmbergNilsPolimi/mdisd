@@ -7,7 +7,6 @@ Eigen::VectorXd OLSInterpolator::interpolate(const Eigen::MatrixXd& parametersFO
     // Interpolation using OLS method.
 
     size_t num_params{static_cast<size_t>(parameters.cols())}; // number of variables of the function to interpolate.
-    size_t num_measures{static_cast<size_t>(measurements.size())}; // number of known points.
     size_t num_points{static_cast<size_t>(parametersFORinterp.rows())}; // number of points to interpolate.
     
     // Add a column with ones in the first position.
